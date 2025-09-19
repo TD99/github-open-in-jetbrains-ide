@@ -1,0 +1,69 @@
+﻿/* li wrapper */
+li.open-in-intellij-item {
+    margin-inline: var(--base-size-8, .5rem);
+    background-color: var(--control-transparent-bgColor-rest, #0000);
+    border-radius: var(--borderRadius-medium, .375rem);
+    list-style: none;
+    position: relative;
+}
+
+/* button */
+.open-in-intellij-btn {
+    --subitem-depth: 0px;
+    background-color: initial;
+    border: none;
+    border-radius: var(--borderRadius-medium, .375rem);
+    color: var(--control-fgColor-rest, var(--color-fg-default));
+    display: grid;
+    padding-block: var(--control-medium-paddingBlock, .375rem);
+    padding-inline: var(--control-medium-paddingInline-condensed, .5rem);
+    position: relative;
+    text-align: left;
+    touch-action: manipulation;
+    transition: background 33.333ms linear;
+    -webkit-user-select: none;
+    user-select: none;
+    width: 100%;
+    -webkit-tap-highlight-color: transparent;
+    align-items: start;
+    grid-template-areas: "spacer leadingAction leadingVisual content";
+    grid-template-columns: min-content min-content min-content minmax(0, auto);
+    grid-template-rows: min-content;
+    cursor: pointer;
+}
+
+.open-in-intellij-btn:hover {
+    background: var(--control-transparent-bgColor-hover, rgba(110, 118, 129, 0.1));
+}
+
+.open-in-intellij-btn:active {
+    background: var(--control-transparent-bgColor-active, rgba(110, 118, 129, 0.2));
+}
+
+/* spacer */
+.open-in-intellij-spacer {
+    grid-area: spacer;
+}
+
+/* label wrapper */
+.open-in-intellij-subcontent {
+    align-items: start;
+    display: grid;
+    grid-area: content;
+    grid-template-areas: "label trailingVisual trailingAction";
+    grid-template-columns: minmax(0, auto) min-content min-content;
+    grid-template-rows: min-content;
+    position: relative;
+    width: 100%;
+}
+
+/* label */
+.open-in-intellij-label {
+    color: var(--fgColor-default, var(--color-fg-default));
+    font-size: var(--text-body-size-medium, .875rem);
+    font-weight: var(--base-text-weight-normal, 400);
+    grid-area: label;
+    line-height: 20px;
+    position: relative;
+    word-break: break-word;
+}

@@ -1,34 +1,35 @@
-﻿function addIntelliJButton(container) {
-  if (!container) return;
+﻿let ideaIdCounter = 0;
 
-  // Prevent duplicates
-  if (container.querySelector(".open-in-intellij")) return;
+function addIntelliJButton(container, repoUrl) {
+  if (!container || container.querySelector(".open-in-intellij")) return;
 
-  // HTTPS clone URL input
-  const input = container.querySelector('input[type="text"]#clone-with-https');
-  if (!input) return;
-  const repoUrl = input.value;
+  const id = `idea-${ideaIdCounter++}`;
+  const labelId = `${id}--label`;
 
-  // Build list item
   const li = document.createElement("li");
-  li.className = "prc-ActionList-ActionListItem-uq6I7";
+  li.className = "open-in-intellij-item";
+  li.setAttribute("data-has-description", "false");
 
   const btn = document.createElement("button");
   btn.type = "button";
-  btn.className = "prc-ActionList-ActionListContent-sg9-x open-in-intellij";
-  btn.style.cursor = "pointer";
+  btn.id = id;
+  btn.tabIndex = 0;
+  btn.setAttribute("aria-labelledby", labelId);
+  btn.setAttribute("data-size", "medium");
+  btn.className = "open-in-intellij-btn";
 
-  // GitHub-style label wrapper
+  const spacer = document.createElement("span");
+  spacer.className = "open-in-intellij-spacer";
+  btn.appendChild(spacer);
+
   const labelWrapper = document.createElement("span");
-  labelWrapper.className = "prc-ActionList-ActionListSubContent-lP9xj";
-  labelWrapper.setAttribute(
-    "data-component",
-    "ActionList.Item--DividerContainer",
-  );
+  labelWrapper.className = "open-in-intellij-subcontent";
+  labelWrapper.setAttribute("data-component", "ActionList.Item--DividerContainer");
 
   const label = document.createElement("span");
-  label.className = "prc-ActionList-ItemLabel-TmBhn";
-  label.innerText = "Open in IntelliJ IDEA";
+  label.className = "open-in-intellij-label";
+  label.id = labelId;
+  label.textContent = "Open in IntelliJ IDEA";
 
   labelWrapper.appendChild(label);
   btn.appendChild(labelWrapper);
@@ -50,16 +51,25 @@
 function handleNode(node) {
   if (node.nodeType !== 1 || node.tagName !== "DIV") return;
 
-  // Check if the overlay is present
-  const overlay = node.querySelector(":scope > .prc-Overlay-Overlay-dVyJl");
-  if (!overlay) return;
-
   // Check if the clone container is present
-  const container = overlay.querySelector(".react-overview-code-button-action-list");
+  const container = node.querySelector(".react-overview-code-button-action-list");
   if (!container) return;
 
-  console.debug("Found clone container: ", container);
-  addIntelliJButton(container);
+  // Check if the repo link is present
+  const linkInput = container.querySelector("input#clone-with-https");
+  if (!linkInput) {
+    console.warn("Clone link input not found. This likely indicates a change in GitHub's DOM structure and should be reported.", container);
+    return;
+  }
+
+  // Check if the repo link is not empty
+  const repo_link = linkInput.value.trim();
+  if (!repo_link) {
+    console.warn("Clone link input is empty. Cannot generate buttons.", container);
+    return;
+  }
+
+  addIntelliJButton(container, repo_link);
 }
 
 function observeCloneDropdown() {
@@ -72,7 +82,8 @@ function observeCloneDropdown() {
   observer.observe(document.body, {childList: true, subtree: true});
 }
 
-// Only run on GitHub repo pages (rough check: must contain "github.com/<user>/<repo>")
+// Only run on GitHub repo pages
 if (/^https:\/\/github\.com\/[^/]+\/[^/]+/.test(window.location.href)) {
+  console.info("The extension 'github-open-in-intellij-ide' is active on this page.");
   observeCloneDropdown();
 }
