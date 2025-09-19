@@ -1,14 +1,58 @@
-﻿let ideaIdCounter = 0;
+﻿// noinspection JSIgnoredPromiseFromCall
 
-function addIntelliJButton(container, repoUrl) {
-  if (!container || container.querySelector(".open-in-intellij")) return;
+let buttonCounter = 0;
 
-  const id = `idea-${ideaIdCounter++}`;
+const SUPPORTED_IDE_LIST = [
+  {id: "idea", name: "IntelliJ IDEA"},
+  {id: "pycharm", name: "PyCharm"},
+  {id: "webstorm", name: "WebStorm"},
+  {id: "phpstorm", name: "PhpStorm"},
+  {id: "rubymine", name: "RubyMine"},
+  {id: "clion", name: "CLion"},
+  {id: "goland", name: "GoLand"},
+  {id: "rider", name: "Rider"},
+  {id: "appcode", name: "AppCode"},
+  {id: "datagrip", name: "DataGrip"},
+  {id: "dataspell", name: "DataSpell"},
+];
+
+function getDefaultIDE() {
+  return new Promise((resolve) => {
+    try {
+      if (chrome?.storage?.sync) {
+        chrome.storage.sync.get({defaultIde: "idea"}, (result) => {
+          resolve(result.defaultIde);
+        });
+      } else {
+        resolve(localStorage.getItem("defaultIde") || "idea");
+      }
+    } catch (e) {
+      console.warn("Storage not available, using fallback", e);
+      resolve(localStorage.getItem("defaultIde") || "idea");
+    }
+  });
+}
+
+function setDefaultIDE(ide) {
+  try {
+    if (chrome?.storage?.sync) {
+      chrome.storage.sync.set({defaultIde: ide});
+    } else {
+      localStorage.setItem("defaultIde", ide);
+    }
+  } catch (e) {
+    console.warn("Storage not available, fallback", e);
+    localStorage.setItem("defaultIde", ide);
+  }
+}
+
+function buildUri(ideId, repoUrl) {
+  return `jetbrains://${ideId}/checkout/git?checkout.repo=${encodeURIComponent(repoUrl)}`;
+}
+
+function createActionButton(label, onClick, extraClass = "") {
+  const id = `idea-${buttonCounter++}`;
   const labelId = `${id}--label`;
-
-  const li = document.createElement("li");
-  li.className = "open-in-intellij-item";
-  li.setAttribute("data-has-description", "false");
 
   const btn = document.createElement("button");
   btn.type = "button";
@@ -16,7 +60,7 @@ function addIntelliJButton(container, repoUrl) {
   btn.tabIndex = 0;
   btn.setAttribute("aria-labelledby", labelId);
   btn.setAttribute("data-size", "medium");
-  btn.className = "open-in-intellij-btn";
+  btn.className = `open-in-intellij-btn ${extraClass}`;
 
   const spacer = document.createElement("span");
   spacer.className = "open-in-intellij-spacer";
@@ -26,50 +70,109 @@ function addIntelliJButton(container, repoUrl) {
   labelWrapper.className = "open-in-intellij-subcontent";
   labelWrapper.setAttribute("data-component", "ActionList.Item--DividerContainer");
 
-  const label = document.createElement("span");
-  label.className = "open-in-intellij-label";
-  label.id = labelId;
-  label.textContent = "Open in IntelliJ IDEA";
+  const labelSpan = document.createElement("span");
+  labelSpan.className = "open-in-intellij-label";
+  labelSpan.id = labelId;
+  labelSpan.textContent = label;
 
-  labelWrapper.appendChild(label);
+  labelWrapper.appendChild(labelSpan);
   btn.appendChild(labelWrapper);
-  li.appendChild(btn);
 
-  // Action: open IntelliJ
-  btn.addEventListener("click", () => {
-    const uri =
-      "jetbrains://idea/checkout/git?checkout.repo=" +
-      encodeURIComponent(repoUrl);
-    window.location.href = uri;
+  if (onClick) {
+    btn.addEventListener("click", onClick);
+  }
+
+  return btn;
+}
+
+async function addIdeButtons(container, repoUrl) {
+  if (!container || container.querySelector(".open-in-intellij-item")) return;
+
+  const defaultIde = await getDefaultIDE();
+  const ideData = SUPPORTED_IDE_LIST.find((i) => i.id === defaultIde);
+
+  // list item
+  const li = document.createElement("li");
+  li.className = "open-in-intellij-item";
+  li.setAttribute("data-has-description", "false");
+
+  // wrapper for split button
+  const wrapper = document.createElement("div");
+  wrapper.className = "open-in-intellij-split";
+
+  // main button (default IDE)
+  const mainBtn = createActionButton(`Open in ${ideData.name}`, () => {
+    window.location.href = buildUri(defaultIde, repoUrl);
+  });
+  wrapper.appendChild(mainBtn);
+
+  // overflow button (chevron)
+  const overflowBtn = createActionButton("▾", () => openIdeModal(repoUrl));
+  overflowBtn.classList.add("open-in-intellij-overflow");
+  wrapper.appendChild(overflowBtn);
+
+  li.appendChild(wrapper);
+
+  // insert before Download ZIP
+  const list = container.querySelector("div > ul");
+  if (list && list.lastElementChild) {
+    list.insertBefore(li, list.lastElementChild);
+  }
+}
+
+function openIdeModal(repoUrl) {
+  if (document.querySelector(".open-in-intellij-modal")) return;
+
+  const overlay = document.createElement("div");
+  overlay.className = "open-in-intellij-modal-overlay";
+
+  const modal = document.createElement("div");
+  modal.className = "open-in-intellij-modal";
+
+  const title = document.createElement("h3");
+  title.textContent = "Select the IDE to open in";
+  modal.appendChild(title);
+
+  SUPPORTED_IDE_LIST.forEach((ide) => {
+    const btn = createActionButton(`Open in ${ide.name}`, () => {
+      setDefaultIDE(ide.id);
+      overlay.remove();
+    });
+    btn.addEventListener("click", () => {
+      window.location.href = buildUri(ide.id, repoUrl);
+    });
+    modal.appendChild(btn);
   });
 
-  // Insert before "Download ZIP"
-  const list = container.querySelector("ul.prc-ActionList-ActionList-X4RiC");
-  if (list) list.insertBefore(li, list.lastElementChild);
+  const note = document.createElement("p");
+  note.style.fontSize = ".8rem";
+  note.style.fontStyle = "italic";
+  note.style.marginTop = ".75rem";
+  note.style.marginBottom = "0";
+  note.textContent = "If this repository was already cloned in a JetBrains IDE, that IDE will be chosen automatically.";
+  modal.appendChild(note);
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) overlay.remove();
+  });
 }
 
 function handleNode(node) {
   if (node.nodeType !== 1 || node.tagName !== "DIV") return;
 
-  // Check if the clone container is present
   const container = node.querySelector(".react-overview-code-button-action-list");
   if (!container) return;
 
-  // Check if the repo link is present
   const linkInput = container.querySelector("input#clone-with-https");
-  if (!linkInput) {
-    console.warn("Clone link input not found. This likely indicates a change in GitHub's DOM structure and should be reported.", container);
-    return;
-  }
+  if (!linkInput) return;
 
-  // Check if the repo link is not empty
-  const repo_link = linkInput.value.trim();
-  if (!repo_link) {
-    console.warn("Clone link input is empty. Cannot generate buttons.", container);
-    return;
-  }
+  const repoLink = linkInput.value.trim();
+  if (!repoLink) return;
 
-  addIntelliJButton(container, repo_link);
+  addIdeButtons(container, repoLink);
 }
 
 function observeCloneDropdown() {
@@ -78,12 +181,10 @@ function observeCloneDropdown() {
       m.addedNodes.forEach(handleNode);
     }
   });
-
   observer.observe(document.body, {childList: true, subtree: true});
 }
 
-// Only run on GitHub repo pages
 if (/^https:\/\/github\.com\/[^/]+\/[^/]+/.test(window.location.href)) {
-  console.info("The extension 'github-open-in-intellij-ide' is active on this page.");
+  console.info("GitHub JetBrains IDE Extension active.");
   observeCloneDropdown();
 }

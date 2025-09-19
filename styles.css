@@ -45,6 +45,29 @@ li.open-in-intellij-item {
     grid-area: spacer;
 }
 
+/* split button wrapper */
+.open-in-intellij-split {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+}
+
+/* main button */
+.open-in-intellij-split .open-in-intellij-btn:first-child {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    flex: 1;
+}
+
+/* overflow chevron */
+.open-in-intellij-overflow {
+    width: 2rem;
+    justify-content: center;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    flex: none;
+}
+
 /* label wrapper */
 .open-in-intellij-subcontent {
     align-items: start;
@@ -66,4 +89,33 @@ li.open-in-intellij-item {
     line-height: 20px;
     position: relative;
     word-break: break-word;
+}
+
+/* Modal overlay */
+.open-in-intellij-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Modal box */
+.open-in-intellij-modal {
+    background: var(--bgColor-default, #fff);
+    border-radius: .5rem;
+    padding: 1rem;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.open-in-intellij-modal h3 {
+    margin-bottom: .75rem;
+    font-size: 1rem;
 }
