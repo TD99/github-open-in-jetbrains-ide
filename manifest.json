@@ -3,7 +3,9 @@
   "name": "GitHub → IntelliJ IDEA",
   "version": "1.0",
   "description": "Adds 'Open in IntelliJ IDEA' to GitHub's clone menu.",
-  "permissions": [],
+  "permissions": [
+    "storage"
+  ],
   "content_scripts": [
     {
       "matches": [
