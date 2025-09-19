@@ -1,0 +1,17 @@
+﻿{
+  "manifest_version": 3,
+  "name": "GitHub → IntelliJ IDEA",
+  "version": "1.0",
+  "description": "Adds 'Open in IntelliJ IDEA' to GitHub's clone menu.",
+  "permissions": [],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://github.com/*"
+      ],
+      "js": [
+        "content.js"
+      ]
+    }
+  ]
+}
