@@ -119,3 +119,11 @@ li.open-with-jetbrains-ide-item {
     margin-bottom: .75rem;
     font-size: 1rem;
 }
+
+/* Modal note */
+.open-with-jetbrains-ide-note {
+    font-size: .8rem;
+    font-style: italic;
+    margin-top: .75rem;
+    margin-bottom: 0;
+}

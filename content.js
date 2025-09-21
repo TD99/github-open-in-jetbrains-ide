@@ -147,10 +147,7 @@ function openIdeModal(repoUrl) {
   });
 
   const note = document.createElement("p");
-  note.style.fontSize = ".8rem";
-  note.style.fontStyle = "italic";
-  note.style.marginTop = ".75rem";
-  note.style.marginBottom = "0";
+  note.className = "open-with-jetbrains-ide-note";
   note.textContent =
     "If this repository was already cloned in a JetBrains IDE, that IDE will be chosen automatically.";
   modal.appendChild(note);
