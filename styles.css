@@ -127,3 +127,19 @@ li.open-with-jetbrains-ide-item {
     margin-top: .75rem;
     margin-bottom: 0;
 }
+
+/* License link */
+.open-with-jetbrains-ide-license {
+    border: none;
+    background: transparent;
+    font-style: italic;
+    font-size: .8rem;
+    color: var(--fgColor-muted, #6a737d);
+    cursor: pointer;
+    margin-top: .75rem;
+    padding: 0;
+}
+
+.open-with-jetbrains-ide-license:hover {
+    text-decoration: underline;
+}

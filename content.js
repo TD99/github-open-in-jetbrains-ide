@@ -139,8 +139,6 @@ function openIdeModal(repoUrl) {
     const btn = createActionButton(`Open with ${ide.name}`, () => {
       setDefaultIDE(ide.id);
       overlay.remove();
-    });
-    btn.addEventListener("click", () => {
       window.location.href = buildUri(ide.id, repoUrl);
     });
     modal.appendChild(btn);
@@ -151,6 +149,14 @@ function openIdeModal(repoUrl) {
   note.textContent =
     "If this repository was already cloned in a JetBrains IDE, that IDE will be chosen automatically.";
   modal.appendChild(note);
+
+  const licenseLink = document.createElement("a");
+  licenseLink.className = "open-with-jetbrains-ide-license";
+  licenseLink.textContent = "License";
+  licenseLink.href = chrome.runtime.getURL("LICENSE");
+  licenseLink.target = "_blank";
+  licenseLink.rel = "noopener noreferrer";
+  modal.appendChild(licenseLink);
 
   overlay.appendChild(modal);
   document.body.appendChild(overlay);

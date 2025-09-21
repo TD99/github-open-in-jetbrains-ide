@@ -24,5 +24,15 @@
     "32": "./assets/td99/icon32.png",
     "48": "./assets/td99/icon48.png",
     "128": "./assets/td99/icon128.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "LICENSE"
+      ],
+      "matches": [
+        "https://github.com/*"
+      ]
+    }
+  ]
 }
