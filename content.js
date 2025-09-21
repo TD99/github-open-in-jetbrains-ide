@@ -164,9 +164,13 @@ function openIdeModal(repoUrl) {
 }
 
 function handleNode(node) {
-  if (node.nodeType !== 1 || node.tagName !== "DIV") return;
+  if (!(node instanceof HTMLDivElement)) return;
 
-  const container = node.querySelector(".react-overview-code-button-action-list");
+  let container =
+    node.classList?.contains("react-overview-code-button-action-list")
+      ? node
+      : node.querySelector(".react-overview-code-button-action-list") ??
+      node.closest(".react-overview-code-button-action-list");
   if (!container) return;
 
   const linkInput = container.querySelector("input#clone-with-https");
@@ -187,7 +191,15 @@ function observeCloneDropdown() {
   observer.observe(document.body, {childList: true, subtree: true});
 }
 
+function handleLoaded() {
+  const container = document.querySelector(".react-overview-code-button-action-list");
+  if (container) {
+    handleNode(container);
+  }
+}
+
 if (/^https:\/\/github\.com\/[^/]+\/[^/]+/.test(window.location.href)) {
-  console.info("GitHub JetBrains IDE Extension active.");
+  console.info("GitHub to JetBrains IDE Extension active.");
+  addEventListener("load", () => handleLoaded());
   observeCloneDropdown();
 }
