@@ -18,5 +18,11 @@
         "styles.css"
       ]
     }
-  ]
+  ],
+  "icons": {
+    "16": "./assets/td99/icon16.png",
+    "32": "./assets/td99/icon32.png",
+    "48": "./assets/td99/icon48.png",
+    "128": "./assets/td99/icon128.png"
+  }
 }
