@@ -3,17 +3,15 @@
 let buttonCounter = 0;
 
 const SUPPORTED_IDE_LIST = [
-  {id: "idea", name: "IntelliJ IDEA"},
-  {id: "pycharm", name: "PyCharm"},
-  {id: "webstorm", name: "WebStorm"},
-  {id: "phpstorm", name: "PhpStorm"},
-  {id: "rubymine", name: "RubyMine"},
-  {id: "clion", name: "CLion"},
-  {id: "goland", name: "GoLand"},
-  {id: "rider", name: "Rider"},
-  {id: "appcode", name: "AppCode"},
-  {id: "datagrip", name: "DataGrip"},
-  {id: "dataspell", name: "DataSpell"},
+  {id: "idea", name: "IntelliJ IDEA", icon: "./assets/jetbrains/idea.svg"},
+  {id: "pycharm", name: "PyCharm", icon: "./assets/jetbrains/pycharm.svg"},
+  {id: "webstorm", name: "WebStorm", icon: "./assets/jetbrains/webstorm.svg"},
+  {id: "phpstorm", name: "PhpStorm", icon: "./assets/jetbrains/phpstorm.svg"},
+  {id: "rubymine", name: "RubyMine", icon: "./assets/jetbrains/rubymine.svg"},
+  {id: "clion", name: "CLion", icon: "./assets/jetbrains/clion.svg"},
+  {id: "goland", name: "GoLand", icon: "./assets/jetbrains/goland.svg"},
+  {id: "rider", name: "Rider", icon: "./assets/jetbrains/rider.svg"},
+  {id: "datagrip", name: "DataGrip", icon: "./assets/jetbrains/datagrip.svg"},
 ];
 
 function getDefaultIDE() {
