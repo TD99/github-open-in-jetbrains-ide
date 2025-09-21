@@ -1,5 +1,5 @@
 ﻿/* li wrapper */
-li.open-in-intellij-item {
+li.open-in-jetbrains-ide-item {
     margin-inline: var(--base-size-8, .5rem);
     background-color: var(--control-transparent-bgColor-rest, #0000);
     border-radius: var(--borderRadius-medium, .375rem);
@@ -8,7 +8,7 @@ li.open-in-intellij-item {
 }
 
 /* button */
-.open-in-intellij-btn {
+.open-in-jetbrains-ide-btn {
     --subitem-depth: 0px;
     background-color: initial;
     border: none;
@@ -32,35 +32,35 @@ li.open-in-intellij-item {
     cursor: pointer;
 }
 
-.open-in-intellij-btn:hover {
+.open-in-jetbrains-ide-btn:hover {
     background: var(--control-transparent-bgColor-hover, rgba(110, 118, 129, 0.1));
 }
 
-.open-in-intellij-btn:active {
+.open-in-jetbrains-ide-btn:active {
     background: var(--control-transparent-bgColor-active, rgba(110, 118, 129, 0.2));
 }
 
 /* spacer */
-.open-in-intellij-spacer {
+.open-in-jetbrains-ide-spacer {
     grid-area: spacer;
 }
 
 /* split button wrapper */
-.open-in-intellij-split {
+.open-in-jetbrains-ide-split {
     display: flex;
     align-items: stretch;
     width: 100%;
 }
 
 /* main button */
-.open-in-intellij-split .open-in-intellij-btn:first-child {
+.open-in-jetbrains-ide-split .open-in-jetbrains-ide-btn:first-child {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
     flex: 1;
 }
 
 /* overflow chevron */
-.open-in-intellij-overflow {
+.open-in-jetbrains-ide-overflow {
     width: 2rem;
     justify-content: center;
     border-top-left-radius: 0;
@@ -69,7 +69,7 @@ li.open-in-intellij-item {
 }
 
 /* label wrapper */
-.open-in-intellij-subcontent {
+.open-in-jetbrains-ide-subcontent {
     align-items: start;
     display: grid;
     grid-area: content;
@@ -81,7 +81,7 @@ li.open-in-intellij-item {
 }
 
 /* label */
-.open-in-intellij-label {
+.open-in-jetbrains-ide-label {
     color: var(--fgColor-default, var(--color-fg-default));
     font-size: var(--text-body-size-medium, .875rem);
     font-weight: var(--base-text-weight-normal, 400);
@@ -92,7 +92,7 @@ li.open-in-intellij-item {
 }
 
 /* Modal overlay */
-.open-in-intellij-modal-overlay {
+.open-in-jetbrains-ide-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -106,7 +106,7 @@ li.open-in-intellij-item {
 }
 
 /* Modal box */
-.open-in-intellij-modal {
+.open-in-jetbrains-ide-modal {
     background: var(--bgColor-default, #fff);
     border-radius: .5rem;
     padding: 1rem;
@@ -115,7 +115,7 @@ li.open-in-intellij-item {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
-.open-in-intellij-modal h3 {
+.open-in-jetbrains-ide-modal h3 {
     margin-bottom: .75rem;
     font-size: 1rem;
 }

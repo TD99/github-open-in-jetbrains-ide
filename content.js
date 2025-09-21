@@ -58,18 +58,21 @@ function createActionButton(label, onClick, extraClass = "") {
   btn.tabIndex = 0;
   btn.setAttribute("aria-labelledby", labelId);
   btn.setAttribute("data-size", "medium");
-  btn.className = `open-in-intellij-btn ${extraClass}`;
+  btn.className = `open-in-jetbrains-ide-btn ${extraClass}`;
 
   const spacer = document.createElement("span");
-  spacer.className = "open-in-intellij-spacer";
+  spacer.className = "open-in-jetbrains-ide-spacer";
   btn.appendChild(spacer);
 
   const labelWrapper = document.createElement("span");
-  labelWrapper.className = "open-in-intellij-subcontent";
-  labelWrapper.setAttribute("data-component", "ActionList.Item--DividerContainer");
+  labelWrapper.className = "open-in-jetbrains-ide-subcontent";
+  labelWrapper.setAttribute(
+    "data-component",
+    "ActionList.Item--DividerContainer",
+  );
 
   const labelSpan = document.createElement("span");
-  labelSpan.className = "open-in-intellij-label";
+  labelSpan.className = "open-in-jetbrains-ide-label";
   labelSpan.id = labelId;
   labelSpan.textContent = label;
 
@@ -84,19 +87,20 @@ function createActionButton(label, onClick, extraClass = "") {
 }
 
 async function addIdeButtons(container, repoUrl) {
-  if (!container || container.querySelector(".open-in-intellij-item")) return;
+  if (!container || container.querySelector(".open-in-jetbrains-ide-item"))
+    return;
 
   const defaultIde = await getDefaultIDE();
   const ideData = SUPPORTED_IDE_LIST.find((i) => i.id === defaultIde);
 
   // list item
   const li = document.createElement("li");
-  li.className = "open-in-intellij-item";
+  li.className = "open-in-jetbrains-ide-item";
   li.setAttribute("data-has-description", "false");
 
   // wrapper for split button
   const wrapper = document.createElement("div");
-  wrapper.className = "open-in-intellij-split";
+  wrapper.className = "open-in-jetbrains-ide-split";
 
   // main button (default IDE)
   const mainBtn = createActionButton(`Open in ${ideData.name}`, () => {
@@ -106,7 +110,7 @@ async function addIdeButtons(container, repoUrl) {
 
   // overflow button (chevron)
   const overflowBtn = createActionButton("▾", () => openIdeModal(repoUrl));
-  overflowBtn.classList.add("open-in-intellij-overflow");
+  overflowBtn.classList.add("open-in-jetbrains-ide-overflow");
   wrapper.appendChild(overflowBtn);
 
   li.appendChild(wrapper);
@@ -119,13 +123,13 @@ async function addIdeButtons(container, repoUrl) {
 }
 
 function openIdeModal(repoUrl) {
-  if (document.querySelector(".open-in-intellij-modal")) return;
+  if (document.querySelector(".open-in-jetbrains-ide-modal")) return;
 
   const overlay = document.createElement("div");
-  overlay.className = "open-in-intellij-modal-overlay";
+  overlay.className = "open-in-jetbrains-ide-modal-overlay";
 
   const modal = document.createElement("div");
-  modal.className = "open-in-intellij-modal";
+  modal.className = "open-in-jetbrains-ide-modal";
 
   const title = document.createElement("h3");
   title.textContent = "Select the IDE to open in";
@@ -147,7 +151,8 @@ function openIdeModal(repoUrl) {
   note.style.fontStyle = "italic";
   note.style.marginTop = ".75rem";
   note.style.marginBottom = "0";
-  note.textContent = "If this repository was already cloned in a JetBrains IDE, that IDE will be chosen automatically.";
+  note.textContent =
+    "If this repository was already cloned in a JetBrains IDE, that IDE will be chosen automatically.";
   modal.appendChild(note);
 
   overlay.appendChild(modal);

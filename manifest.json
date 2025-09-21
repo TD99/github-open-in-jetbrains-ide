@@ -1,8 +1,8 @@
 ﻿{
   "manifest_version": 3,
-  "name": "GitHub → IntelliJ IDEA",
+  "name": "GitHub → JetBrains IDE",
   "version": "1.0",
-  "description": "Adds 'Open in IntelliJ IDEA' to GitHub's clone menu.",
+  "description": "Adds 'Open with JetBrains IDE' to GitHub's clone menu.",
   "permissions": [
     "storage"
   ],
