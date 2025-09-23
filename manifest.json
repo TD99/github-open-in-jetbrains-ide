@@ -1,6 +1,6 @@
 ﻿{
   "manifest_version": 3,
-  "name": "GitHub → JetBrains IDE",
+  "name": "GitHub to JetBrains IDE",
   "version": "1.0",
   "description": "Adds 'Open with JetBrains IDE' to GitHub's clone menu.",
   "permissions": [
@@ -15,7 +15,7 @@
         "content.js"
       ],
       "css": [
-        "styles.css"
+        "style.css"
       ]
     }
   ],
@@ -28,7 +28,9 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "LICENSE"
+        "pages/*",
+        "assets/jetbrains/*",
+        "assets/td99/*"
       ],
       "matches": [
         "https://github.com/*"

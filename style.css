@@ -107,7 +107,7 @@ li.open-with-jetbrains-ide-item {
 
 /* Modal box */
 .open-with-jetbrains-ide-modal {
-    background: var(--bgColor-default, #fff);
+    background: var(--bgColor-default, var(--color-canvas-default));
     border-radius: .5rem;
     padding: 1rem;
     max-width: 400px;
@@ -142,4 +142,20 @@ li.open-with-jetbrains-ide-item {
 
 .open-with-jetbrains-ide-license:hover {
     text-decoration: underline;
+}
+
+/* IDE icon */
+.open-with-jetbrains-ide-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    grid-area: leadingVisual;
+    min-height: var(--control-medium-lineBoxHeight, 1.25rem);
+    min-width: 1rem;
+    margin-right: var(--control-medium-gap, .5rem);
+}
+
+.open-with-jetbrains-ide-icon img {
+    width: 16px;
+    height: 16px;
 }
