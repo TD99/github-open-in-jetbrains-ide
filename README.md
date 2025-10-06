@@ -1,5 +1,7 @@
 ﻿# GitHub to JetBrains IDE
 
+[![Lint, Validate, Build & Release](https://img.shields.io/github/actions/workflow/status/TD99/github-open-in-jetbrains-ide/build-and-release.yml?label=Lint%2C%20Validate%2C%20Build%20%26%20Release)](https://github.com/TD99/github-open-in-jetbrains-ide/actions/workflows/build-and-release.yml)
+
 ![Chrome Extension](https://img.shields.io/badge/Chrome%20Extension-%23000000.svg?style=flat&logo=chromewebstore&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-%23000000.svg?style=flat&logo=javascript&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-%23000000.svg?style=flat&logo=github&logoColor=white)
