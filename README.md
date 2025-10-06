@@ -46,9 +46,9 @@ The extension requests the following permissions:
     - Clone this repository.
     - Download the [latest release](https://github.com/TD99/github-open-in-jetbrains-ide/releases/latest) and extract
       the contents.
-2. Open chrome://extensions/ in your browser.
+2. Open `chrome://extensions/` in your browser.
 3. Enable Developer mode (top-right toggle).
-4. Click Load unpacked.
+4. Click `Load unpacked`.
 5. Select the folder containing this repository.
 
 ## License
