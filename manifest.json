@@ -1,4 +1,5 @@
 ﻿{
+  "$schema": "https://json.schemastore.org/chrome-manifest.json",
   "manifest_version": 3,
   "name": "GitHub to JetBrains IDE",
   "version": "1.0",
@@ -6,6 +7,15 @@
   "permissions": [
     "storage"
   ],
+  "action": {
+    "default_popup": "popup/index.html",
+    "default_icon": {
+      "16": "./assets/icon16.png",
+      "32": "./assets/icon32.png",
+      "48": "./assets/icon48.png",
+      "128": "./assets/icon128.png"
+    }
+  },
   "content_scripts": [
     {
       "matches": [
@@ -20,15 +30,15 @@
     }
   ],
   "icons": {
-    "16": "./assets/td99/icon16.png",
-    "32": "./assets/td99/icon32.png",
-    "48": "./assets/td99/icon48.png",
-    "128": "./assets/td99/icon128.png"
+    "16": "./assets/icon16.png",
+    "32": "./assets/icon32.png",
+    "48": "./assets/icon48.png",
+    "128": "./assets/icon128.png"
   },
   "web_accessible_resources": [
     {
       "resources": [
-        "pages/*",
+        "assets/*"
       ],
       "matches": [
         "https://github.com/*"

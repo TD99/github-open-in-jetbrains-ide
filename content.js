@@ -167,42 +167,6 @@ async function addIdeButtons(container, repoUrl) {
   }
 }
 
-function getGitHubBackgroundColor() {
-  const documentRoot = document.documentElement;
-
-  let githubBackground = getComputedStyle(documentRoot).getPropertyValue("--bgColor-default");
-  if (!githubBackground) {
-    githubBackground = getComputedStyle(documentRoot).getPropertyValue("--color-canvas-default");
-  }
-
-  return githubBackground;
-}
-
-function isGitHubBackgroundColorDark() {
-  const colorStr = getGitHubBackgroundColor();
-  if (!colorStr || !colorStr.startsWith("#")) return false;
-
-  const hex = colorStr.slice(1);
-
-  let r, g, b;
-  if (hex.length === 3) {
-    // short form #rgb
-    r = parseInt(hex[0] + hex[0], 16);
-    g = parseInt(hex[1] + hex[1], 16);
-    b = parseInt(hex[2] + hex[2], 16);
-  } else if (hex.length === 6) {
-    // full form #rrggbb
-    r = parseInt(hex.substring(0, 2), 16);
-    g = parseInt(hex.substring(2, 4), 16);
-    b = parseInt(hex.substring(4, 6), 16);
-  } else {
-    return false; // unsupported HEX format
-  }
-
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  return brightness < 128;
-}
-
 function openIdeModal(repoUrl) {
   if (document.querySelector(".open-with-jetbrains-ide-modal")) return;
 
@@ -238,14 +202,6 @@ function openIdeModal(repoUrl) {
   note.textContent =
     "If this repository was already cloned in a JetBrains IDE, that IDE will be chosen automatically.";
   modal.appendChild(note);
-
-  const licenseLink = document.createElement("a");
-  licenseLink.className = "open-with-jetbrains-ide-license";
-  licenseLink.textContent = "License";
-  licenseLink.href = chrome.runtime.getURL("pages/license/index.html") + "?background-color=" + encodeURIComponent(getGitHubBackgroundColor());
-  licenseLink.target = "_blank";
-  licenseLink.rel = "noopener noreferrer";
-  modal.appendChild(licenseLink);
 
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
