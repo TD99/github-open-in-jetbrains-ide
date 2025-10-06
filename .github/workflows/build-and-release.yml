@@ -1,0 +1,68 @@
+﻿name: Lint, Validate, Build & Release
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Lint, Validate, Build ZIP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      - name: Lint JavaScript
+        run: |
+          npm install -g eslint
+          eslint . --ext .js
+
+      - name: Validate Manifest
+        run: |
+          npm install -g ajv-cli
+          SCHEMA_URL=$(grep -o '"\$schema": *"[^"]*"' manifest.json | cut -d '"' -f4)
+          echo "Validating manifest.json against schema: $SCHEMA_URL"
+          ajv validate -s "$SCHEMA_URL" -d manifest.json
+
+      - name: Build ZIP
+        run: |
+          mkdir -p dist
+          zip -r dist/github-open-in-jetbrains-ide-extension.zip . \
+            -x "*.git*" \
+               ".github/*" \
+               ".idea/*" \
+               ".vscode/*" \
+               "node_modules/*"
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-zip
+          path: dist/github-open-in-jetbrains-ide-extension.zip
+
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: extension-zip
+          path: dist
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/github-open-in-jetbrains-ide-extension.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
