@@ -26,12 +26,15 @@ jobs:
 
       - name: Validate Manifest
         run: |
-          npm install -g ajv-cli
+          sudo apt-get install -y python3-pip
+          pip install check-jsonschema
           SCHEMA_URL=$(grep -o '"\$schema": *"[^"]*"' manifest.json | cut -d '"' -f4)
           echo "Downloading Chrome manifest schema from: $SCHEMA_URL"
           curl -sSL "$SCHEMA_URL" -o schema.json
+          echo "Removing UTF-8 BOM if present..."
+          sed -i '1s/^\xEF\xBB\xBF//' manifest.json
           echo "Validating manifest.json..."
-          ajv validate -s schema.json -d manifest.json --strict=false --ignore-unknown-formats
+          check-jsonschema --schemafile schema.json manifest.json
 
       - name: Build ZIP
         run: |
