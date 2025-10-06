@@ -29,8 +29,6 @@
     {
       "resources": [
         "pages/*",
-        "assets/jetbrains/*",
-        "assets/td99/*"
       ],
       "matches": [
         "https://github.com/*"
