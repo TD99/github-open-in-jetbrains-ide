@@ -1,4 +1,10 @@
-﻿/* li wrapper */
+﻿/* disable scrolling when modal is open */
+body:has(.open-with-jetbrains-ide-modal-overlay) {
+    overflow: hidden;
+    padding-right: var(--scrollbar-width, 0);
+}
+
+/* li wrapper */
 li.open-with-jetbrains-ide-item {
     margin-inline: var(--base-size-8, .5rem);
     background-color: var(--control-transparent-bgColor-rest, #0000);

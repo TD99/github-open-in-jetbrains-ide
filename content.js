@@ -206,6 +206,9 @@ function isGitHubBackgroundColorDark() {
 function openIdeModal(repoUrl) {
   if (document.querySelector(".open-with-jetbrains-ide-modal")) return;
 
+  const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+  document.body.style.setProperty("--scrollbar-width", `${scrollbarWidth}px`);
+
   const overlay = document.createElement("div");
   overlay.className = "open-with-jetbrains-ide-modal-overlay";
 
