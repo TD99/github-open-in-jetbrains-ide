@@ -253,6 +253,11 @@ p.unstyled {
     padding: 0;
 }
 
+.tab-panel img {
+    max-width: 100%;
+    margin-bottom: 1rem;
+}
+
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
     body {
