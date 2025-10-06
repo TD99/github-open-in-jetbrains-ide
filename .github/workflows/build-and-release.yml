@@ -28,14 +28,18 @@ jobs:
         run: |
           npm install -g ajv-cli
           SCHEMA_URL=$(grep -o '"\$schema": *"[^"]*"' manifest.json | cut -d '"' -f4)
-          echo "Validating manifest.json against schema: $SCHEMA_URL"
-          ajv validate -s "$SCHEMA_URL" -d manifest.json
+          echo "Downloading Chrome manifest schema from: $SCHEMA_URL"
+          curl -sSL "$SCHEMA_URL" -o schema.json
+          echo "Validating manifest.json..."
+          ajv validate -s schema.json -d manifest.json
 
       - name: Build ZIP
         run: |
           mkdir -p dist
           zip -r dist/github-open-in-jetbrains-ide-extension.zip . \
-            -x "*.git*" \
+            -x "schema.json" \
+               "*.git*" \
+               ".git/*" \
                ".github/*" \
                ".idea/*" \
                ".vscode/*" \
