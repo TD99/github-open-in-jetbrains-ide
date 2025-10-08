@@ -1,6 +1,4 @@
 {
-  "$schema": "https://json.schemastore.org/chrome-manifest.json",
-
   "manifest_version": 3,
   "name": "GitHub to JetBrains IDE",
   "version": "1.0.0",
@@ -55,5 +53,11 @@
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "github-to-jetbrains@timduerr.dev",
+      "strict_min_version": "109.0"
+    }
   }
 }
