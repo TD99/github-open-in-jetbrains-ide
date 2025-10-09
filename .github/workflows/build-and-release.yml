@@ -49,6 +49,7 @@ jobs:
                ".github/*" \
                ".idea/*" \
                ".vscode/*" \
+               ".design/*" \
                "node_modules/*" \
                "dist/*"
 
