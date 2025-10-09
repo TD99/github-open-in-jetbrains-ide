@@ -1,14 +1,14 @@
 ﻿module.exports = [
   {
-    files: ["**/*.js"],
+    files: ['**/*.js'],
     languageOptions: {
-      ecmaVersion: "latest",
-      sourceType: "script",
+      ecmaVersion: 'latest',
+      sourceType: 'script',
     },
     rules: {
-      "no-unused-vars": "warn",
-      "no-console": "off",
-      semi: ["error", "always"],
+      'no-unused-vars': 'warn',
+      'no-console': 'off',
+      semi: ['error', 'always'],
     },
   },
 ];
