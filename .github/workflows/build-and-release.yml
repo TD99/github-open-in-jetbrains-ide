@@ -31,7 +31,7 @@ jobs:
         run: |
           sudo apt-get install -y python3-pip
           pip install check-jsonschema
-          SCHEMA_URL=$(grep -o '"\$schema": *"[^"]*"' manifest.json | cut -d '"' -f4)
+          SCHEMA_URL="https://json.schemastore.org/chrome-manifest.json"
           echo "Downloading Chrome manifest schema from: $SCHEMA_URL"
           curl -sSL "$SCHEMA_URL" -o schema.json
           echo "Removing UTF-8 BOM if present..."
