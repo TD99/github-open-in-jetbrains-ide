@@ -134,7 +134,7 @@ p.unstyled {
 .tab-button.active {
     border-bottom: 3px solid;
     border-image-slice: 1;
-    border-image-source: linear-gradient(45deg, #ff8d1c, #e601fb);
+    border-image-source: linear-gradient(90deg, #e87c17, #e8178a);
     color: #24292f;
 }
 
