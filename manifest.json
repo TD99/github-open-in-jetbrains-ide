@@ -6,19 +6,19 @@
   "author": "t9craft",
   "homepage_url": "https://github.com/TD99/github-open-in-jetbrains-ide",
   "icons": {
-    "16": "assets/icon16.png",
-    "32": "assets/icon32.png",
-    "48": "assets/icon48.png",
-    "128": "assets/icon128.png"
+    "16": "assets/favicons/icon16.png",
+    "32": "assets/favicons/icon32.png",
+    "48": "assets/favicons/icon48.png",
+    "128": "assets/favicons/icon128.png"
   },
 
   "action": {
     "default_popup": "popup/index.html",
     "default_icon": {
-      "16": "assets/icon16.png",
-      "32": "assets/icon32.png",
-      "48": "assets/icon48.png",
-      "128": "assets/icon128.png"
+      "16": "assets/favicons/icon16.png",
+      "32": "assets/favicons/icon32.png",
+      "48": "assets/favicons/icon48.png",
+      "128": "assets/favicons/icon128.png"
     }
   },
   "permissions": [
