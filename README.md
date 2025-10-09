@@ -3,12 +3,13 @@
 [![Lint, Validate, Build & Release](https://img.shields.io/github/actions/workflow/status/TD99/github-open-in-jetbrains-ide/build-and-release.yml?label=Lint%2C%20Validate%2C%20Build%20%26%20Release)](https://github.com/TD99/github-open-in-jetbrains-ide/actions/workflows/build-and-release.yml)
 
 ![Chrome Extension](https://img.shields.io/badge/Chrome%20Extension-%23000000.svg?style=flat&logo=chromewebstore&logoColor=white)
+![Firefox Extension](https://img.shields.io/badge/Firefox%20Extension-%23000000.svg?style=flat&logo=firefoxbrowser&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-%23000000.svg?style=flat&logo=javascript&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-%23000000.svg?style=flat&logo=github&logoColor=white)
 ![JetBrains](https://img.shields.io/badge/JetBrains-%23000000.svg?style=flat&logo=jetbrains&logoColor=white)
 
 ## Overview
-GitHub to JetBrains IDE is a Chrome extension that adds an `Open with <JetBrains IDE>` button to GitHub repositories.
+GitHub to JetBrains IDE is a browser extension that adds an `Open with <JetBrains IDE>` button to GitHub repositories.
 With a single click, you can open any GitHub project directly in your favorite JetBrains IDE.
 
 The extension supports all major JetBrains IDEs, including IntelliJ IDEA, PyCharm, WebStorm, PhpStorm, CLion, GoLand,
