@@ -26,7 +26,7 @@
 
 <div align="center">
     <a href="https://chromewebstore.google.com/detail/pppdeonmpbikkfkhoacgmbmlkfbmlpjg"><img src="https://img.shields.io/badge/Get%20on%20Chrome%20Web%20Store-%231f3a12.svg?style=for-the-badge&logo=chromewebstore&logoColor=white" alt="Get on Chrome Web Store"></a>
-    <a href="https://addons.mozilla.org/en-US/firefox/addon/github-to-jetbrains-ide/"><img src="https://img.shields.io/badge/Get%20on%20Firefox%20Browser%20Addons-%2320123A.svg?style=for-the-badge&logo=firefoxbrowser&logoColor=white" alt="Get on Firefox Browser Addons"></a>
+    <a href="https://addons.mozilla.org/en-US/firefox/addon/github-to-jetbrains-ide/"><img src="https://img.shields.io/badge/Get%20on%20Firefox%20Browser%20Add--ons-%2320123A.svg?style=for-the-badge&logo=firefoxbrowser&logoColor=white" alt="Get on Firefox Browser Add-ons"></a>
 </div>
 
 <br>
