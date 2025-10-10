@@ -41,8 +41,11 @@ jobs:
 
       - name: Build ZIP
         run: |
+          TAG_NAME="${GITHUB_REF_NAME}"
           mkdir -p dist
-          zip -r dist/github-open-in-jetbrains-ide-extension.zip . \
+          ZIP_NAME="github-open-in-jetbrains-ide-extension-${TAG_NAME}.zip"
+          echo "Building ZIP: $ZIP_NAME"
+          zip -r "dist/$ZIP_NAME" . \
             -x "schema.json" \
                "eslint.config.js" \
                ".prettierrc" \
@@ -59,7 +62,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: extension-zip
-          path: dist/github-open-in-jetbrains-ide-extension.zip
+          path: dist
 
   release:
     name: Create GitHub Release
@@ -76,7 +79,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/github-open-in-jetbrains-ide-extension.zip
+          files: dist/github-open-in-jetbrains-ide-extension-*.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
