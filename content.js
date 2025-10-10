@@ -94,6 +94,14 @@ function buildUri(ideId, repoUrl) {
   return `jetbrains://${ideId}/checkout/git?checkout.repo=${encodeURIComponent(repoUrl)}`;
 }
 
+function closeOldModal() {
+  const oldModal = document.querySelector('#__primerPortalRoot__').firstChild;
+
+  if (oldModal) {
+    oldModal.remove();
+  }
+}
+
 function createActionButton(label, onClick, extraClass = '', icon = null) {
   const id = `idea-${buttonCounter++}`;
   const labelId = `${id}--label`;
@@ -184,6 +192,8 @@ async function addIdeButtons(container, repoUrl) {
 
 function openIdeModal(repoUrl) {
   if (document.querySelector('.open-with-jetbrains-ide-modal')) return;
+
+  closeOldModal();
 
   const scrollbarWidth =
     window.innerWidth - document.documentElement.clientWidth;
