@@ -44,6 +44,8 @@ jobs:
           mkdir -p dist
           zip -r dist/github-open-in-jetbrains-ide-extension.zip . \
             -x "schema.json" \
+               "eslint.config.js" \
+               ".prettierrc" \
                "*.git*" \
                ".git/*" \
                ".github/*" \

@@ -2,6 +2,7 @@
   <dictionary name="project">
     <words>
       <w>dataspell</w>
+      <w>prettierrc</w>
     </words>
   </dictionary>
 </component>
