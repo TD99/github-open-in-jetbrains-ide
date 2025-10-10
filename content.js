@@ -227,7 +227,7 @@ function openIdeModal(repoUrl) {
   title.textContent = 'Select the IDE to open with';
   modal.appendChild(title);
 
-  SUPPORTED_IDE_LIST.forEach((ide) => {
+  SUPPORTED_IDE_LIST.forEach((ide, index) => {
     const btn = createActionButton(
       `Open with ${ide.name}`,
       () => {
@@ -238,6 +238,11 @@ function openIdeModal(repoUrl) {
       '',
       ide.icon
     );
+
+    if (index === 0) {
+      requestAnimationFrame(() => btn.focus());
+    }
+
     modal.appendChild(btn);
   });
 
