@@ -12,8 +12,8 @@
 GitHub to JetBrains IDE is a browser extension that adds an `Open with <JetBrains IDE>` button to GitHub repositories.
 With a single click, you can open any GitHub project directly in your favorite JetBrains IDE.
 
-The extension supports all major JetBrains IDEs, including IntelliJ IDEA, PyCharm, WebStorm, PhpStorm, CLion, GoLand,
-Rider, RubyMine, DataGrip, and DataSpell.
+The extension supports all major JetBrains IDEs, including IntelliJ IDEA, PyCharm, WebStorm, PhpStorm, RubyMine, CLion, GoLand,
+Rider, and DataGrip.
 
 ## Features
 - Adds `Open with <IDE>` and dropdown options to GitHub's `Code` menu.
