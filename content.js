@@ -103,7 +103,9 @@ function createActionButton(label, onClick, extraClass = '', icon = null) {
   if (icon && isSafeSvg(icon)) {
     const iconWrapper = document.createElement('span');
     iconWrapper.className = 'open-with-jetbrains-ide-icon';
-    iconWrapper.innerHTML = icon;
+    const svgDocument = new DOMParser().parseFromString(icon, 'image/svg+xml');
+    const svgElement = svgDocument.documentElement;
+    iconWrapper.appendChild(svgElement);
     btn.appendChild(iconWrapper);
   }
 
