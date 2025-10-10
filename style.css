@@ -115,21 +115,66 @@ li.open-with-jetbrains-ide-item {
     display: flex;
     align-items: center;
     justify-content: center;
+    animation: jetbrains-ide-modal-overlay-fade-in 0.25s ease forwards;
+}
+
+@keyframes jetbrains-ide-modal-overlay-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.open-with-jetbrains-ide-modal-overlay.closing {
+    animation: jetbrains-ide-modal-overlay-fade-out 0.25s ease forwards;
+}
+
+@keyframes jetbrains-ide-modal-overlay-fade-out {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
 }
 
 /* Modal box */
 .open-with-jetbrains-ide-modal {
-    background: var(--bgColor-default, var(--color-canvas-default));
-    border-radius: 0.5rem;
+    background: var(--overlay-bgColor, var(--color-canvas-overlay));
+    border-radius: var(--borderRadius-large, 0.75rem);
     padding: 1rem;
     max-width: 400px;
     width: 90%;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-floating-small, var(--color-overlay-shadow));
+    animation: jetbrains-ide-modal-zoom-in 0.25s ease forwards;
 }
 
-.open-with-jetbrains-ide-modal h3 {
-    margin-bottom: 0.75rem;
-    font-size: 1rem;
+@keyframes jetbrains-ide-modal-zoom-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.closing > .open-with-jetbrains-ide-modal {
+    animation: jetbrains-ide-modal-zoom-out 0.25s ease forwards;
+}
+
+@keyframes jetbrains-ide-modal-zoom-out {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+    }
 }
 
 /* Modal note */
@@ -138,22 +183,6 @@ li.open-with-jetbrains-ide-item {
     font-style: italic;
     margin-top: 0.75rem;
     margin-bottom: 0;
-}
-
-/* License link */
-.open-with-jetbrains-ide-license {
-    border: none;
-    background: transparent;
-    font-style: italic;
-    font-size: 0.8rem;
-    color: var(--fgColor-muted, #6a737d);
-    cursor: pointer;
-    margin-top: 0.75rem;
-    padding: 0;
-}
-
-.open-with-jetbrains-ide-license:hover {
-    text-decoration: underline;
 }
 
 /* IDE icon */
@@ -165,6 +194,11 @@ li.open-with-jetbrains-ide-item {
     min-height: var(--control-medium-lineBoxHeight, 1.25rem);
     min-width: 1rem;
     margin-right: var(--control-medium-gap, 0.5rem);
+}
+
+.open-with-jetbrains-ide-modal h3 {
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
 }
 
 .open-with-jetbrains-ide-icon img {

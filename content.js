@@ -190,6 +190,24 @@ async function addIdeButtons(container, repoUrl) {
   }
 }
 
+function handleEscape(event) {
+  if (event.key === 'Escape') {
+    closeIdeModal();
+  }
+}
+
+function closeIdeModal() {
+  const overlay = document.querySelector(
+    '.open-with-jetbrains-ide-modal-overlay'
+  );
+  if (overlay) {
+    overlay.classList.add('closing');
+    overlay.addEventListener('animationend', () => overlay.remove());
+  }
+
+  document.removeEventListener('keydown', handleEscape);
+}
+
 function openIdeModal(repoUrl) {
   if (document.querySelector('.open-with-jetbrains-ide-modal')) return;
 
@@ -214,7 +232,7 @@ function openIdeModal(repoUrl) {
       `Open with ${ide.name}`,
       () => {
         setDefaultIDE(ide.id);
-        overlay.remove();
+        closeIdeModal();
         window.location.href = buildUri(ide.id, repoUrl);
       },
       '',
@@ -233,8 +251,10 @@ function openIdeModal(repoUrl) {
   document.body.appendChild(overlay);
 
   overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) overlay.remove();
+    if (e.target === overlay) closeIdeModal();
   });
+
+  document.addEventListener('keydown', handleEscape);
 }
 
 function handleNode(node) {
