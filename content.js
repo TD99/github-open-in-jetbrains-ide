@@ -59,22 +59,32 @@ const SUPPORTED_IDE_LIST = [
     icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M0,0v24h24V0H0ZM12.59,21H2.99v-1.8h9.6v1.8ZM11.49,12.01h-2l-1.52-6.54-1.54,6.54h-1.99L2.27,3.01h1.82l1.45,6.57,1.55-6.57h1.78l1.62,6.57,1.41-6.57h1.78l-2.19,9ZM20.38,10.81c-.28.42-.67.75-1.18.99-.5.24-1.09.36-1.73.36s-1.23-.12-1.74-.35c-.5-.23-.89-.56-1.18-.99-.28-.43-.43-.91-.44-1.46h1.76c0,.26.07.49.2.68.14.2.33.35.57.46.25.11.53.17.85.17s.57-.05.8-.14c.23-.11.41-.25.53-.43s.19-.38.19-.62c0-.29-.09-.52-.26-.71-.17-.19-.41-.32-.71-.39l-1.59-.35c-.43-.1-.8-.26-1.12-.49-.32-.23-.56-.52-.74-.85-.17-.34-.26-.72-.26-1.15,0-.52.13-.98.4-1.38.26-.41.64-.73,1.11-.96.48-.23,1.02-.35,1.62-.35s1.16.11,1.64.34c.48.22.85.53,1.12.93.27.4.41.85.41,1.36h-1.76c0-.22-.05-.41-.17-.58-.11-.18-.28-.31-.49-.41-.21-.1-.46-.14-.73-.14s-.52.05-.73.14c-.21.09-.37.22-.49.39-.11.16-.17.35-.17.57,0,.25.08.46.24.62.16.16.38.28.66.35l1.54.33c.44.09.83.26,1.18.52.35.25.62.56.81.93.19.36.29.76.29,1.19,0,.53-.14,1.01-.43,1.43Z"/></svg>',
   },
 ];
+const FALLBACK_IDE_ID = 'idea';
 
-function getDefaultIDE() {
-  return new Promise((resolve) => {
-    try {
-      if (chrome?.storage?.sync) {
-        chrome.storage.sync.get({ defaultIde: 'idea' }, (result) => {
-          resolve(result.defaultIde);
-        });
-      } else {
-        resolve(localStorage.getItem('defaultIde') || 'idea');
-      }
-    } catch (e) {
-      console.warn('Storage not available, using fallback', e);
-      resolve(localStorage.getItem('defaultIde') || 'idea');
+async function getDefaultIDE() {
+  const isSupported = (id) => SUPPORTED_IDE_LIST.some((ide) => ide.id === id);
+  const getSafeIde = (ide) => (isSupported(ide) ? ide : FALLBACK_IDE_ID);
+
+  try {
+    if (chrome?.storage?.sync) {
+      const result = await new Promise((resolve) => {
+        chrome.storage.sync.get({ defaultIde: FALLBACK_IDE_ID }, resolve);
+      });
+      return getSafeIde(result.defaultIde);
     }
-  });
+
+    const ide = localStorage.getItem('defaultIde');
+    return getSafeIde(ide);
+  } catch (e) {
+    console.warn('Storage not available, using fallback IDE.', e);
+
+    try {
+      const ide = localStorage.getItem('defaultIde');
+      return getSafeIde(ide);
+    } catch {
+      return FALLBACK_IDE_ID;
+    }
+  }
 }
 
 function setDefaultIDE(ide) {
