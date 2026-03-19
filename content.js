@@ -179,15 +179,24 @@ async function addIdeButtons(container, repoUrl) {
   const wrapper = document.createElement('div');
   wrapper.className = 'open-with-jetbrains-ide-split';
 
+  const getCurrentRepoUrl = () => {
+    const linkInput = container.querySelector(
+      'input#clone-with-https, input#clone-with-ssh'
+    );
+    return linkInput ? linkInput.value.trim() : repoUrl;
+  };
+
   // main button (default IDE)
   const mainBtn = createActionButton(
     `Open with ${ideData.name}`,
-    () => (window.location.href = buildUri(defaultIde, repoUrl))
+    () => (window.location.href = buildUri(defaultIde, getCurrentRepoUrl()))
   );
   wrapper.appendChild(mainBtn);
 
   // overflow button (chevron)
-  const overflowBtn = createActionButton('▾', () => openIdeModal(repoUrl));
+  const overflowBtn = createActionButton('▾', () =>
+    openIdeModal(getCurrentRepoUrl())
+  );
   overflowBtn.classList.add('open-with-jetbrains-ide-overflow');
   wrapper.appendChild(overflowBtn);
 
@@ -283,7 +292,9 @@ function handleNode(node) {
       node.closest('.react-overview-code-button-action-list'));
   if (!container) return;
 
-  const linkInput = container.querySelector('input#clone-with-https');
+  const linkInput = container.querySelector(
+    'input#clone-with-https, input#clone-with-ssh'
+  );
   if (!linkInput) return;
 
   const repoLink = linkInput.value.trim();
