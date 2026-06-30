@@ -4,15 +4,61 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g. 1.2.3). Leave empty to auto-detect."
+        required: false
+        type: string
 
 permissions:
   contents: write
 
 jobs:
+  prepare:
+    name: Determine version and push tag
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set-version.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # GitVersion needs full history
+
+      - name: Setup GitVersion
+        if: inputs.version == ''
+        uses: gittools/actions/gitversion/setup@v4.5.0
+        with:
+          versionSpec: "6.x"
+
+      - name: Execute GitVersion
+        if: inputs.version == ''
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v4.5.0
+
+      - name: Set version output
+        id: set-version
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            INPUT="${{ inputs.version }}"
+            echo "version=${INPUT#v}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ steps.gitversion.outputs.majorMinorPatch }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "v${{ steps.set-version.outputs.version }}"
+          git push origin "v${{ steps.set-version.outputs.version }}"
+
   build:
     name: Lint, Validate, Build ZIP
     runs-on: ubuntu-latest
-
+    needs: prepare
+    if: always() && (needs.prepare.result == 'success' || needs.prepare.result == 'skipped')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -26,6 +72,22 @@ jobs:
         run: |
           npm install -g eslint
           eslint . --ext .js
+
+      - name: Resolve tag name
+        id: tag
+        run: |
+          if [ -n "${{ needs.prepare.outputs.version }}" ]; then
+            echo "name=v${{ needs.prepare.outputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "name=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Inject version
+        run: |
+          VERSION="${{ steps.tag.outputs.name }}"
+          VERSION="${VERSION#v}"
+          echo "Injecting version: $VERSION"
+          jq --arg v "$VERSION" '.version = $v' manifest.json > manifest.tmp && mv manifest.tmp manifest.json
 
       - name: Validate Manifest
         run: |
@@ -41,10 +103,7 @@ jobs:
 
       - name: Build ZIP
         run: |
-          TAG_NAME="${GITHUB_REF_NAME}"
-          VERSION="${TAG_NAME#v}"
-          echo "Injecting version: $VERSION"
-          sed -i "s/LOCAL-VERSION/$VERSION/" manifest.json
+          TAG_NAME="${{ steps.tag.outputs.name }}"
           mkdir -p dist
           ZIP_NAME="github-open-in-jetbrains-ide-extension-${TAG_NAME}.zip"
           echo "Building ZIP: $ZIP_NAME"
@@ -70,8 +129,8 @@ jobs:
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: build
-
+    needs: [prepare, build]
+    if: always() && needs.build.result == 'success'
     steps:
       - name: Download Build Artifact
         uses: actions/download-artifact@v5
@@ -79,9 +138,19 @@ jobs:
           name: extension-zip
           path: dist
 
+      - name: Resolve tag name
+        id: tag
+        run: |
+          if [ -n "${{ needs.prepare.outputs.version }}" ]; then
+            echo "name=v${{ needs.prepare.outputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "name=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.tag.outputs.name }}
           files: dist/github-open-in-jetbrains-ide-extension-*.zip
           generate_release_notes: true
         env:
