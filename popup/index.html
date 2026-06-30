@@ -1,94 +1,154 @@
 ﻿<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8"/>
+  <head>
+    <meta charset="UTF-8" />
     <title>GitHub to JetBrains IDE</title>
-    <link rel="stylesheet" href="style.css"/>
-</head>
-<body>
-<div class="about-section">
-    <img
-            src="../assets/favicons/icon128_full.png"
-            alt="Extension Logo"
-            class="about-logo"
-    />
-    <div>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="about-section">
+      <img
+        src="../assets/favicons/icon128_full.png"
+        alt="Extension Logo"
+        class="about-logo"
+      />
+      <div>
         <h1>
-            <a id="project-homepage" target="_blank" rel="noopener noreferrer">
-                GitHub to JetBrains IDE
-            </a>
+          <a id="project-homepage" target="_blank" rel="noopener noreferrer">
+            GitHub to JetBrains IDE
+          </a>
         </h1>
         <small id="version">Version <span id="version-number"></span></small>
-    </div>
-    <p id="description">
+      </div>
+      <p id="description">
         Quickly open GitHub repositories in your favorite JetBrains IDE.
-    </p>
-</div>
+      </p>
+    </div>
 
-<div class="tabs">
-    <button class="tab-button active" data-tab="help">Help</button>
-    <button class="tab-button" data-tab="license">License</button>
-</div>
+    <div class="tabs">
+      <button class="tab-button active" data-tab="help">Help</button>
+      <button class="tab-button" data-tab="settings">Settings</button>
+      <button class="tab-button" data-tab="license">License</button>
+    </div>
 
-<!-- Help -->
-<section id="help" class="tab-panel active">
-    <h3>1. Supported IDEs</h3>
-    <p>
-        All major JetBrains IDEs are supported, including Android Studio, CLion, DataSpell, GoLand, IntelliJ IDEA,
-        PhpStorm, PyCharm, Rider, RubyMine, RustRover, and WebStorm.
-    </p>
+    <!-- Help -->
+    <section id="help" class="tab-panel active">
+      <h3>1. Supported IDEs</h3>
+      <p>
+        All major JetBrains IDEs are supported, including Android Studio, CLion,
+        DataSpell, GoLand, IntelliJ IDEA, PhpStorm, PyCharm, Rider, RubyMine,
+        RustRover, and WebStorm.
+      </p>
 
-    <h3>2. Using the extension on GitHub</h3>
-    <p>
+      <h3>2. Using the extension on GitHub</h3>
+      <p>
         On a GitHub repository page, open the <strong>Code</strong> dropdown
         menu.
-    </p>
+      </p>
 
-    <p class="unstyled">The menu now contains two new options:</p>
-    <ul>
+      <p class="unstyled">The menu now contains two new options:</p>
+      <ul>
         <li>
-            <strong>“Open with &lt;IDE&gt;”</strong> opens the repository
-            directly.
+          <strong>“Open with &lt;IDE&gt;”</strong> opens the repository
+          directly.
         </li>
         <li><strong>“▼”</strong> lets you pick another JetBrains IDE.</li>
-    </ul>
+      </ul>
 
-    <img
-            src="../assets/screenshots/screenshot_default_ide.png"
-            alt="Screenshot showing the new 'Open with IDE' button inside the GitHub Code dropdown"
-            class="screenshot"
-    />
+      <img
+        src="../assets/screenshots/screenshot_default_ide.png"
+        alt="Screenshot showing the new 'Open with IDE' button inside the GitHub Code dropdown"
+        class="screenshot"
+      />
 
-    <img
-            src="../assets/screenshots/screenshot_overflow_menu.png"
-            alt="Screenshot showing the overflow menu for choosing another IDE"
-            class="screenshot"
-    />
+      <img
+        src="../assets/screenshots/screenshot_overflow_menu.png"
+        alt="Screenshot showing the overflow menu for choosing another IDE"
+        class="screenshot"
+      />
 
-    <h3>3. Default IDE</h3>
-    <p>
+      <h3>3. Default IDE</h3>
+      <p>
         The IDE you pick from the “▼”-menu becomes your new default. The
         extension remembers your choice automatically for future GitHub visits:
-    </p>
-    <img
-            src="../assets/screenshots/screenshot_all_ide_menu.png"
-            alt="Screenshot showing all IDEs available in the dropdown menu"
-            class="screenshot"
-    />
+      </p>
+      <img
+        src="../assets/screenshots/screenshot_all_ide_menu.png"
+        alt="Screenshot showing all IDEs available in the dropdown menu"
+        class="screenshot"
+      />
 
-    <h3>4. Toolbox Behavior</h3>
-    <p>
+      <h3>4. Toolbox Behavior</h3>
+      <p>
         If a repository was already cloned in a JetBrains IDE, that IDE will be
         used automatically (instead of the default set in the extension). This
         is JetBrains Toolbox’s intended behavior and helps automatically locate
         the existing repository clone on your device.
-    </p>
-</section>
+      </p>
+    </section>
 
-<!-- License -->
-<section id="license" class="tab-panel">
-    <h3>MIT License</h3>
-    <pre>
+    <!-- Settings -->
+    <section id="settings" class="tab-panel">
+      <h3>Builtin IDEs</h3>
+      <p>
+        Choose which IDEs appear in the GitHub Code menu.
+      </p>
+      <div id="ide-list" class="settings-list"></div>
+
+      <h3>Custom IDE</h3>
+      <p>
+        Add a custom launcher. Use <code>%r</code> where the encoded repository
+        URL should be inserted.
+      </p>
+      <form id="custom-ide-form" class="settings-form">
+        <label>
+          Display name
+          <input id="custom-ide-name" type="text" placeholder="My IDE" />
+        </label>
+        <label>
+          URI template
+          <input
+                  id="custom-ide-uri"
+                  type="text"
+                  placeholder="myide://checkout?repo=%r"
+          />
+        </label>
+        <label>
+          Icon SVG (optional)
+          <textarea
+                  id="custom-ide-icon"
+                  rows="3"
+                  placeholder="&lt;svg ...&gt;&lt;/svg&gt;"
+          ></textarea>
+        </label>
+        <button type="submit" class="primary-button">Add custom IDE</button>
+      </form>
+      <div id="custom-ide-list" class="settings-list"></div>
+
+      <h3>GitHub Hosts</h3>
+      <p>
+        Control where the extension injects itself. Custom hosts must be
+        <code>*.ghe.com</code> enterprise instances.
+      </p>
+      <div id="host-list" class="settings-list"></div>
+      <form id="custom-host-form" class="settings-form inline-form">
+        <label>
+          Enterprise host
+          <input
+                  id="custom-host"
+                  type="text"
+                  placeholder="myenterprise.ghe.com"
+          />
+        </label>
+        <button type="submit" class="primary-button">Add host</button>
+      </form>
+      <p id="settings-message" class="settings-message" role="status"></p>
+    </section>
+
+    <!-- License -->
+    <section id="license" class="tab-panel">
+      <h3>MIT License</h3>
+      <pre>
 Copyright (c) 2025 timduerr.dev
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -97,32 +157,32 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     </pre
-    >
+      >
 
-    <h3>Attribution for JetBrains Brand Assets</h3>
-    <p>
+      <h3>Attribution for JetBrains Brand Assets</h3>
+      <p>
         This project uses JetBrains product logos and icons for the purpose of
         referring to JetBrains IDEs. These assets are the property of JetBrains
         s.r.o. and are used in compliance with the
         <a
-                href="https://www.jetbrains.com/company/brand/"
-                target="_blank"
-                rel="noopener noreferrer"
+          href="https://www.jetbrains.com/company/brand/"
+          target="_blank"
+          rel="noopener noreferrer"
         >
-            JetBrains Brand Guidelines </a
+          JetBrains Brand Guidelines </a
         >.
-    </p>
-    <p>
+      </p>
+      <p>
         Please note that any use of JetBrains Brand Assets should link back to
         <a
-                href="https://www.jetbrains.com"
-                target="_blank"
-                rel="noopener noreferrer"
-        >https://www.jetbrains.com</a
+          href="https://www.jetbrains.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          >https://www.jetbrains.com</a
         >.
-    </p>
+      </p>
 
-    <pre>
+      <pre>
 © 2025 JetBrains s.r.o. JetBrains and the JetBrains logo are trademarks of JetBrains s.r.o.
 © 2025 JetBrains s.r.o. IntelliJ IDEA and the IntelliJ IDEA logo are trademarks of JetBrains s.r.o.
 © 2025 JetBrains s.r.o. PyCharm and the PyCharm logo are trademarks of JetBrains s.r.o.
@@ -135,18 +195,18 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 © 2025 JetBrains s.r.o. DataGrip and the DataGrip logo are trademarks of JetBrains s.r.o.
 © 2025 JetBrains s.r.o. DataSpell and the DataSpell logo are trademarks of JetBrains s.r.o.
     </pre
-    >
+      >
 
-    <h3>Disclaimer of Affiliation</h3>
-    <p>
+      <h3>Disclaimer of Affiliation</h3>
+      <p>
         This project is an independent open-source project and is not affiliated
         with, endorsed by, or sponsored by JetBrains s.r.o. or GitHub, Inc. Any
         references to JetBrains products or GitHub are for identification
         purposes only and do not imply any endorsement. All trademarks are the
         property of their respective owners.
-    </p>
-</section>
+      </p>
+    </section>
 
-<script src="script.js"></script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>

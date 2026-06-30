@@ -60,10 +60,70 @@ const SUPPORTED_IDE_LIST = [
   },
 ];
 const FALLBACK_IDE_ID = 'idea';
+const FALLBACK_IDE_ICON =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M0 0h24v24H0z"/><path fill="#fff" d="M3 3h18v18H3z" opacity=".16"/><path fill="#fff" d="M5 16h8v2H5zM5 6h4.5l2.25 4L14 6h5v12h-3V9.75L12.9 15h-2.3L7.5 9.75V14H5z"/></svg>';
+const SETTINGS_DEFAULTS = {
+  enabledIdeIds: SUPPORTED_IDE_LIST.map((ide) => ide.id),
+  customIdes: [],
+  enabledHosts: ['github.com'],
+};
 
-async function getDefaultIDE() {
-  const isSupported = (id) => SUPPORTED_IDE_LIST.some((ide) => ide.id === id);
-  const getSafeIde = (ide) => (isSupported(ide) ? ide : FALLBACK_IDE_ID);
+function getFromStorage(defaults) {
+  return new Promise((resolve) => {
+    if (!chrome?.storage?.sync) {
+      resolve(defaults);
+      return;
+    }
+
+    chrome.storage.sync.get(defaults, resolve);
+  });
+}
+
+async function getSettings() {
+  try {
+    const raw = await getFromStorage(SETTINGS_DEFAULTS);
+    const builtInIds = new Set(SUPPORTED_IDE_LIST.map((ide) => ide.id));
+    const customIdes = Array.isArray(raw.customIdes) ? raw.customIdes : [];
+    const customIds = new Set(customIdes.map((ide) => ide.id));
+    const enabledIdeIds = Array.isArray(raw.enabledIdeIds)
+      ? raw.enabledIdeIds.filter(
+          (id) => builtInIds.has(id) || customIds.has(id)
+        )
+      : SETTINGS_DEFAULTS.enabledIdeIds;
+
+    return {
+      enabledIdeIds: enabledIdeIds.length
+        ? enabledIdeIds
+        : [SUPPORTED_IDE_LIST[0].id],
+      customIdes,
+      enabledHosts: Array.isArray(raw.enabledHosts)
+        ? raw.enabledHosts
+        : SETTINGS_DEFAULTS.enabledHosts,
+    };
+  } catch (e) {
+    console.warn('Settings not available, using defaults.', e);
+    return SETTINGS_DEFAULTS;
+  }
+}
+
+function getEnabledIdeList(settings) {
+  const enabledIds = new Set(settings.enabledIdeIds);
+  const builtIns = SUPPORTED_IDE_LIST.filter((ide) => enabledIds.has(ide.id));
+  const customIdes = settings.customIdes
+    .filter((ide) => enabledIds.has(ide.id))
+    .map((ide) => ({
+      ...ide,
+      icon: ide.icon || FALLBACK_IDE_ICON,
+      custom: true,
+    }));
+
+  return [...builtIns, ...customIdes];
+}
+
+async function getDefaultIDE(enabledIdeList) {
+  const isSupported = (id) => enabledIdeList.some((ide) => ide.id === id);
+  const getSafeIde = (ide) =>
+    isSupported(ide) ? ide : enabledIdeList[0]?.id || FALLBACK_IDE_ID;
 
   try {
     if (chrome?.storage?.sync) {
@@ -100,7 +160,12 @@ function setDefaultIDE(ide) {
   }
 }
 
-function buildUri(ideId, repoUrl) {
+function buildUri(ide, repoUrl) {
+  if (ide.custom) {
+    return ide.uriTemplate.replaceAll('%r', encodeURIComponent(repoUrl));
+  }
+
+  const ideId = ide.id;
   return `jetbrains://${ideId}/checkout/git?checkout.repo=${encodeURIComponent(repoUrl)}`;
 }
 
@@ -176,8 +241,11 @@ async function addIdeButtons(container, repoUrl) {
   // from all passing the guard while getDefaultIDE() is in flight.
   container.setAttribute('data-jb-ide-pending', '');
 
-  const defaultIde = await getDefaultIDE();
-  const ideData = SUPPORTED_IDE_LIST.find((i) => i.id === defaultIde);
+  const settings = await getSettings();
+  const enabledIdeList = getEnabledIdeList(settings);
+  const defaultIde = await getDefaultIDE(enabledIdeList);
+  const ideData = enabledIdeList.find((i) => i.id === defaultIde);
+  if (!ideData) return;
 
   // list item
   const li = document.createElement('li');
@@ -198,13 +266,13 @@ async function addIdeButtons(container, repoUrl) {
   // main button (default IDE)
   const mainBtn = createActionButton(
     `Open with ${ideData.name}`,
-    () => (window.location.href = buildUri(defaultIde, getCurrentRepoUrl()))
+    () => (window.location.href = buildUri(ideData, getCurrentRepoUrl()))
   );
   wrapper.appendChild(mainBtn);
 
   // overflow button (chevron)
   const overflowBtn = createActionButton('▾', () =>
-    openIdeModal(getCurrentRepoUrl())
+    openIdeModal(getCurrentRepoUrl(), enabledIdeList)
   );
   overflowBtn.classList.add('open-with-jetbrains-ide-overflow');
   wrapper.appendChild(overflowBtn);
@@ -213,9 +281,12 @@ async function addIdeButtons(container, repoUrl) {
 
   // insert before Download ZIP
   const list = container.querySelector('ul[data-component="ActionList"]');
-  if (list && list.lastElementChild) {
-    list.insertBefore(li, list.lastElementChild);
+  if (!list || !list.lastElementChild) {
+    container.removeAttribute('data-jb-ide-pending');
+    return;
   }
+
+  list.insertBefore(li, list.lastElementChild);
 }
 
 function handleEscape(event) {
@@ -236,7 +307,7 @@ function closeIdeModal() {
   document.removeEventListener('keydown', handleEscape);
 }
 
-function openIdeModal(repoUrl) {
+function openIdeModal(repoUrl, ideList) {
   if (document.querySelector('.open-with-jetbrains-ide-modal')) return;
 
   closeOldModal();
@@ -255,13 +326,13 @@ function openIdeModal(repoUrl) {
   title.textContent = 'Select the IDE to open with';
   modal.appendChild(title);
 
-  SUPPORTED_IDE_LIST.forEach((ide, index) => {
+  ideList.forEach((ide, index) => {
     const btn = createActionButton(
       `Open with ${ide.name}`,
       () => {
         setDefaultIDE(ide.id);
         closeIdeModal();
-        window.location.href = buildUri(ide.id, repoUrl);
+        window.location.href = buildUri(ide, repoUrl);
       },
       '',
       ide.icon
@@ -302,11 +373,17 @@ function handleNode(node) {
     container = node;
   } else {
     const child = node.querySelector('[data-component="AnchoredOverlay"]');
-    if (child && child.querySelector('input#clone-with-https, input#clone-with-ssh')) {
+    if (
+      child &&
+      child.querySelector('input#clone-with-https, input#clone-with-ssh')
+    ) {
       container = child;
     } else {
       const ancestor = node.closest('[data-component="AnchoredOverlay"]');
-      if (ancestor && ancestor.querySelector('input#clone-with-https, input#clone-with-ssh')) {
+      if (
+        ancestor &&
+        ancestor.querySelector('input#clone-with-https, input#clone-with-ssh')
+      ) {
         container = ancestor;
       }
     }
@@ -342,8 +419,19 @@ function handleLoaded() {
     });
 }
 
-if (/^https:\/\/github\.com\/[^/]+\/[^/]+/.test(window.location.href)) {
-  console.info('GitHub to JetBrains IDE Extension active.');
-  addEventListener('load', () => handleLoaded());
-  observeCloneDropdown();
+async function shouldActivate() {
+  if (!/^https:\/\/[^/]+\/[^/]+\/[^/]+/.test(window.location.href)) {
+    return false;
+  }
+
+  const settings = await getSettings();
+  return settings.enabledHosts.includes(window.location.hostname);
 }
+
+shouldActivate().then((active) => {
+  if (active) {
+    console.info('GitHub to JetBrains IDE Extension active.');
+    addEventListener('load', () => handleLoaded());
+    observeCloneDropdown();
+  }
+});
