@@ -105,7 +105,8 @@ function buildUri(ideId, repoUrl) {
 }
 
 function closeOldModal() {
-  const oldModal = document.querySelector('#__primerPortalRoot__').firstChild;
+  const portalRoot = document.querySelector('#__primerPortalRoot__');
+  const oldModal = portalRoot?.firstChild;
 
   if (oldModal) {
     oldModal.remove();
@@ -164,8 +165,16 @@ function isSafeSvg(svgString) {
 }
 
 async function addIdeButtons(container, repoUrl) {
-  if (!container || container.querySelector('.open-with-jetbrains-ide-item'))
+  if (
+    !container ||
+    container.querySelector('.open-with-jetbrains-ide-item') ||
+    container.hasAttribute('data-jb-ide-pending')
+  )
     return;
+
+  // Mark synchronously before the first await to prevent concurrent calls
+  // from all passing the guard while getDefaultIDE() is in flight.
+  container.setAttribute('data-jb-ide-pending', '');
 
   const defaultIde = await getDefaultIDE();
   const ideData = SUPPORTED_IDE_LIST.find((i) => i.id === defaultIde);
@@ -203,7 +212,7 @@ async function addIdeButtons(container, repoUrl) {
   li.appendChild(wrapper);
 
   // insert before Download ZIP
-  const list = container.querySelector('div > ul');
+  const list = container.querySelector('ul[data-component="ActionList"]');
   if (list && list.lastElementChild) {
     list.insertBefore(li, list.lastElementChild);
   }
@@ -282,14 +291,26 @@ function openIdeModal(repoUrl) {
 }
 
 function handleNode(node) {
-  if (!(node instanceof HTMLDivElement)) return;
+  if (!(node instanceof HTMLElement)) return;
 
-  let container = node.classList?.contains(
-    'react-overview-code-button-action-list'
-  )
-    ? node
-    : (node.querySelector('.react-overview-code-button-action-list') ??
-      node.closest('.react-overview-code-button-action-list'));
+  let container = null;
+  const isCloneOverlay = (el) =>
+    el.matches('[data-component="AnchoredOverlay"]') &&
+    el.querySelector('input#clone-with-https, input#clone-with-ssh');
+
+  if (isCloneOverlay(node)) {
+    container = node;
+  } else {
+    const child = node.querySelector('[data-component="AnchoredOverlay"]');
+    if (child && child.querySelector('input#clone-with-https, input#clone-with-ssh')) {
+      container = child;
+    } else {
+      const ancestor = node.closest('[data-component="AnchoredOverlay"]');
+      if (ancestor && ancestor.querySelector('input#clone-with-https, input#clone-with-ssh')) {
+        container = ancestor;
+      }
+    }
+  }
   if (!container) return;
 
   const linkInput = container.querySelector(
@@ -313,12 +334,12 @@ function observeCloneDropdown() {
 }
 
 function handleLoaded() {
-  const container = document.querySelector(
-    '.react-overview-code-button-action-list'
-  );
-  if (container) {
-    handleNode(container);
-  }
+  document
+    .querySelectorAll('input#clone-with-https, input#clone-with-ssh')
+    .forEach((input) => {
+      const container = input.closest('[data-component="AnchoredOverlay"]');
+      if (container) handleNode(container);
+    });
 }
 
 if (/^https:\/\/github\.com\/[^/]+\/[^/]+/.test(window.location.href)) {
