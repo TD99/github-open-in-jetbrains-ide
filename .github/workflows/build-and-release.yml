@@ -42,6 +42,9 @@ jobs:
       - name: Build ZIP
         run: |
           TAG_NAME="${GITHUB_REF_NAME}"
+          VERSION="${TAG_NAME#v}"
+          echo "Injecting version: $VERSION"
+          sed -i "s/LOCAL-VERSION/$VERSION/" manifest.json
           mkdir -p dist
           ZIP_NAME="github-open-in-jetbrains-ide-extension-${TAG_NAME}.zip"
           echo "Building ZIP: $ZIP_NAME"
