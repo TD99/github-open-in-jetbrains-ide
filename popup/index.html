@@ -89,60 +89,70 @@
 
     <!-- Settings -->
     <section id="settings" class="tab-panel">
-      <h3>Builtin IDEs</h3>
-      <p>
-        Choose which IDEs appear in the GitHub Code menu.
-      </p>
+      <h3>IDEs</h3>
+      <p>Choose which IDEs appear in the GitHub Code menu.</p>
       <div id="ide-list" class="settings-list"></div>
 
-      <h3>Custom IDE</h3>
-      <p>
-        Add a custom launcher. Use <code>%r</code> where the encoded repository
-        URL should be inserted.
-      </p>
-      <form id="custom-ide-form" class="settings-form">
-        <label>
-          Display name
-          <input id="custom-ide-name" type="text" placeholder="My IDE" />
-        </label>
-        <label>
-          URI template
-          <input
-                  id="custom-ide-uri"
-                  type="text"
-                  placeholder="myide://checkout?repo=%r"
-          />
-        </label>
-        <label>
-          Icon SVG (optional)
-          <textarea
-                  id="custom-ide-icon"
-                  rows="3"
-                  placeholder="&lt;svg ...&gt;&lt;/svg&gt;"
-          ></textarea>
-        </label>
-        <button type="submit" class="primary-button">Add custom IDE</button>
-      </form>
-      <div id="custom-ide-list" class="settings-list"></div>
+      <div class="settings-island">
+        <form id="custom-ide-form" class="settings-form">
+          <input id="custom-ide-id" type="hidden" />
+          <label>
+            Display name
+            <input id="custom-ide-name" type="text" placeholder="My IDE" />
+          </label>
+          <label>
+            URI template
+            <input
+              id="custom-ide-uri"
+              type="text"
+              placeholder="myide://checkout?repo=%r"
+            />
+          </label>
+          <label>
+            Icon SVG (optional)
+            <span class="file-upload">
+              <span id="custom-ide-icon-label">Choose SVG file</span>
+              <input
+                id="custom-ide-icon"
+                type="file"
+                accept=".svg,image/svg+xml"
+              />
+            </span>
+          </label>
+          <div class="form-actions">
+            <button id="custom-ide-submit" type="submit" class="primary-button">
+              Add custom IDE
+            </button>
+            <button
+              id="custom-ide-cancel"
+              type="button"
+              class="secondary-button"
+              hidden
+            >
+              Cancel edit
+            </button>
+          </div>
+        </form>
+      </div>
 
       <h3>GitHub Hosts</h3>
       <p>
-        Control where the extension injects itself. Custom hosts must be
-        <code>*.ghe.com</code> enterprise instances.
+        Control where the extension can be used.
       </p>
       <div id="host-list" class="settings-list"></div>
-      <form id="custom-host-form" class="settings-form inline-form">
-        <label>
-          Enterprise host
-          <input
-                  id="custom-host"
-                  type="text"
-                  placeholder="myenterprise.ghe.com"
-          />
-        </label>
-        <button type="submit" class="primary-button">Add host</button>
-      </form>
-      <p id="settings-message" class="settings-message" role="status"></p>
+      <div class="settings-island">
+        <form id="custom-host-form" class="settings-form inline-form">
+          <label>
+            Enterprise host
+            <input
+              id="custom-host"
+              type="text"
+              placeholder="myenterprise.ghe.com"
+            />
+          </label>
+          <button type="submit" class="primary-button">Add custom host</button>
+        </form>
+      </div>
     </section>
 
     <!-- License -->

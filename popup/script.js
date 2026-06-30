@@ -19,6 +19,7 @@ const SETTINGS_DEFAULTS = {
 };
 
 let settings = { ...SETTINGS_DEFAULTS };
+let selectedIconSvg = '';
 
 function isSafeSvg(svgString) {
   return !/<\s*(script|iframe|object|embed|link|style|on\w+)/i.test(svgString);
@@ -46,22 +47,36 @@ function normalizeSettings(raw) {
   return {
     enabledIdeIds: enabledIdeIds.length ? enabledIdeIds : [BUILT_IN_IDES[0].id],
     customIdes,
-    enabledHosts,
+    enabledHosts: enabledHosts.length ? enabledHosts : ['github.com'],
   };
+}
+
+function getAllIdes() {
+  return [
+    ...BUILT_IN_IDES.map((ide) => ({ ...ide, type: 'built-in' })),
+    ...settings.customIdes.map((ide) => ({ ...ide, type: 'custom' })),
+  ];
 }
 
 function countEnabledIdes() {
   return settings.enabledIdeIds.length;
 }
 
+function countEnabledHosts() {
+  return settings.enabledHosts.length;
+}
+
 async function saveSettings() {
   await setStorage(settings);
 }
 
-function setMessage(message, type = '') {
-  const element = document.getElementById('settings-message');
-  element.textContent = message;
-  element.className = `settings-message ${type}`.trim();
+function showInputError(input, message) {
+  input.setCustomValidity(message);
+  input.reportValidity();
+}
+
+function clearInputError(input) {
+  input.setCustomValidity('');
 }
 
 function createSwitch(checked, onChange) {
@@ -78,6 +93,15 @@ function createSwitch(checked, onChange) {
 
   label.append(input, slider);
   return label;
+}
+
+function createButton(label, className, onClick) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = className;
+  button.textContent = label;
+  button.addEventListener('click', onClick);
+  return button;
 }
 
 function createRow(title, subtitle, actions) {
@@ -112,7 +136,6 @@ async function toggleIde(id, input) {
 
   if (enabled && countEnabledIdes() === 1) {
     input.checked = true;
-    setMessage('At least one IDE must remain enabled.', 'error');
     return;
   }
 
@@ -122,56 +145,73 @@ async function toggleIde(id, input) {
 
   await saveSettings();
   renderIdeSettings();
-  setMessage('IDE settings saved.', 'success');
 }
 
 function renderIdeSettings() {
   const ideList = document.getElementById('ide-list');
-  const customIdeList = document.getElementById('custom-ide-list');
   ideList.textContent = '';
-  customIdeList.textContent = '';
 
-  BUILT_IN_IDES.forEach((ide) => {
+  getAllIdes().forEach((ide) => {
+    const actions = [];
+
+    if (ide.type === 'built-in') {
+      actions.push(
+        createSwitch(settings.enabledIdeIds.includes(ide.id), (input) =>
+          toggleIde(ide.id, input)
+        )
+      );
+    }
+
+    if (ide.type === 'custom') {
+      actions.push(
+        createButton('Edit', 'secondary-button', () => startCustomIdeEdit(ide)),
+        createButton('Remove', 'danger-button', () => removeCustomIde(ide.id))
+      );
+    }
+
     ideList.appendChild(
-      createRow(ide.name, 'Built-in JetBrains launcher', [
-        createSwitch(settings.enabledIdeIds.includes(ide.id), (input) =>
-          toggleIde(ide.id, input)
-        ),
-      ])
+      createRow(ide.name, ide.type === 'custom' ? ide.uriTemplate : '', actions)
     );
   });
+}
 
-  settings.customIdes.forEach((ide) => {
-    const removeButton = document.createElement('button');
-    removeButton.type = 'button';
-    removeButton.className = 'danger-button';
-    removeButton.textContent = 'Remove';
-    removeButton.addEventListener('click', async () => {
-      if (settings.enabledIdeIds.includes(ide.id) && countEnabledIdes() === 1) {
-        setMessage('At least one IDE must remain enabled.', 'error');
-        return;
-      }
+function resetCustomIdeForm() {
+  document.getElementById('custom-ide-id').value = '';
+  document.getElementById('custom-ide-name').value = '';
+  document.getElementById('custom-ide-uri').value = '';
+  document.getElementById('custom-ide-icon').value = '';
+  document.getElementById('custom-ide-icon-label').textContent =
+    'Choose SVG file';
+  document.getElementById('custom-ide-submit').textContent = 'Add custom IDE';
+  document.getElementById('custom-ide-cancel').hidden = true;
+  selectedIconSvg = '';
+}
 
-      settings.customIdes = settings.customIdes.filter(
-        (customIde) => customIde.id !== ide.id
-      );
-      settings.enabledIdeIds = settings.enabledIdeIds.filter(
-        (enabledId) => enabledId !== ide.id
-      );
-      await saveSettings();
-      renderIdeSettings();
-      setMessage('Custom IDE removed.', 'success');
-    });
+function startCustomIdeEdit(ide) {
+  document.getElementById('custom-ide-id').value = ide.id;
+  document.getElementById('custom-ide-name').value = ide.name;
+  document.getElementById('custom-ide-uri').value = ide.uriTemplate;
+  document.getElementById('custom-ide-icon').value = '';
+  document.getElementById('custom-ide-icon-label').textContent = ide.icon
+    ? 'Current SVG kept unless replaced'
+    : 'Choose SVG file';
+  document.getElementById('custom-ide-submit').textContent = 'Save custom IDE';
+  document.getElementById('custom-ide-cancel').hidden = false;
+  selectedIconSvg = ide.icon || '';
+}
 
-    customIdeList.appendChild(
-      createRow(ide.name, ide.uriTemplate, [
-        createSwitch(settings.enabledIdeIds.includes(ide.id), (input) =>
-          toggleIde(ide.id, input)
-        ),
-        removeButton,
-      ])
-    );
-  });
+async function removeCustomIde(id) {
+  if (settings.enabledIdeIds.includes(id) && countEnabledIdes() === 1) {
+    return;
+  }
+
+  settings.customIdes = settings.customIdes.filter((ide) => ide.id !== id);
+  settings.enabledIdeIds = settings.enabledIdeIds.filter(
+    (enabledId) => enabledId !== id
+  );
+  await saveSettings();
+  resetCustomIdeForm();
+  renderIdeSettings();
 }
 
 function parseHost(value) {
@@ -186,86 +226,133 @@ function parseHost(value) {
   }
 }
 
+async function toggleHost(host, input) {
+  const enabled = settings.enabledHosts.includes(host);
+
+  if (enabled && countEnabledHosts() === 1) {
+    input.checked = true;
+    return;
+  }
+
+  settings.enabledHosts = enabled
+    ? settings.enabledHosts.filter((enabledHost) => enabledHost !== host)
+    : [...settings.enabledHosts, host];
+  await saveSettings();
+  renderHostSettings();
+}
+
 function renderHostSettings() {
   const hostList = document.getElementById('host-list');
   hostList.textContent = '';
 
-  hostList.appendChild(
-    createRow('github.com', 'Default public GitHub host', [
-      createSwitch(settings.enabledHosts.includes('github.com'), async () => {
-        settings.enabledHosts = settings.enabledHosts.includes('github.com')
-          ? settings.enabledHosts.filter((host) => host !== 'github.com')
-          : ['github.com', ...settings.enabledHosts];
-        await saveSettings();
-        renderHostSettings();
-        setMessage('Host settings saved.', 'success');
-      }),
-    ])
-  );
-
   settings.enabledHosts
     .filter((host) => host !== 'github.com')
+    .sort()
     .forEach((host) => {
-      const removeButton = document.createElement('button');
-      removeButton.type = 'button';
-      removeButton.className = 'danger-button';
-      removeButton.textContent = 'Remove';
-      removeButton.addEventListener('click', async () => {
+      hostList.appendChild(createHostRow(host, true));
+    });
+
+  hostList.prepend(
+    createHostRow('github.com', settings.enabledHosts.includes('github.com'))
+  );
+}
+
+function createHostRow(host, enabled) {
+  const actions = [];
+
+  if (host === 'github.com') {
+    actions.push(createSwitch(enabled, (input) => toggleHost(host, input)));
+  }
+
+  if (host !== 'github.com') {
+    actions.push(
+      createButton('Remove', 'danger-button', async () => {
+        if (settings.enabledHosts.includes(host) && countEnabledHosts() === 1) {
+          return;
+        }
+
         settings.enabledHosts = settings.enabledHosts.filter(
           (enabledHost) => enabledHost !== host
         );
         await saveSettings();
         renderHostSettings();
-        setMessage('Host removed.', 'success');
-      });
+      })
+    );
+  }
 
-      hostList.appendChild(
-        createRow(host, 'GitHub Enterprise Cloud host', [removeButton])
-      );
-    });
+  return createRow(
+    host,
+    host === 'github.com' ? '' : 'GitHub Enterprise Cloud host',
+    actions
+  );
 }
 
-async function addCustomIde(event) {
+function readSvgFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener('load', () => resolve(reader.result));
+    reader.addEventListener('error', () => reject(reader.error));
+    reader.readAsText(file);
+  });
+}
+
+async function handleIconUpload(event) {
+  const input = event.target;
+  const file = input.files[0];
+  if (!file) return;
+
+  const label = document.getElementById('custom-ide-icon-label');
+  const svg = await readSvgFile(file);
+
+  if (!file.name.toLowerCase().endsWith('.svg') || !isSafeSvg(svg)) {
+    input.value = '';
+    selectedIconSvg = '';
+    showInputError(input, 'Choose a safe SVG file.');
+    return;
+  }
+
+  clearInputError(input);
+  selectedIconSvg = svg;
+  label.textContent = file.name;
+}
+
+async function saveCustomIde(event) {
   event.preventDefault();
 
+  const idInput = document.getElementById('custom-ide-id');
   const nameInput = document.getElementById('custom-ide-name');
   const uriInput = document.getElementById('custom-ide-uri');
-  const iconInput = document.getElementById('custom-ide-icon');
   const name = nameInput.value.trim();
   const uriTemplate = uriInput.value.trim();
-  const icon = iconInput.value.trim();
 
   if (!name) {
-    setMessage('Custom IDE needs a display name.', 'error');
+    showInputError(nameInput, 'Custom IDE needs a display name.');
     return;
   }
 
   if (!uriTemplate.includes('%r')) {
-    setMessage(
-      'Custom IDE URI must include the %r repository placeholder.',
-      'error'
+    showInputError(
+      uriInput,
+      'Custom IDE URI must include the %r repository placeholder.'
     );
     return;
   }
 
-  if (icon && !isSafeSvg(icon)) {
-    setMessage('Icon SVG contains unsupported or unsafe markup.', 'error');
-    return;
+  const id = idInput.value || `custom-${Date.now()}`;
+  const customIde = { id, name, uriTemplate, icon: selectedIconSvg };
+
+  if (idInput.value) {
+    settings.customIdes = settings.customIdes.map((ide) =>
+      ide.id === id ? customIde : ide
+    );
+  } else {
+    settings.customIdes = [...settings.customIdes, customIde];
+    settings.enabledIdeIds = [...settings.enabledIdeIds, id];
   }
 
-  const id = `custom-${Date.now()}`;
-  settings.customIdes = [
-    ...settings.customIdes,
-    { id, name, uriTemplate, icon },
-  ];
-  settings.enabledIdeIds = [...settings.enabledIdeIds, id];
   await saveSettings();
-
-  nameInput.value = '';
-  uriInput.value = '';
-  iconInput.value = '';
+  resetCustomIdeForm();
   renderIdeSettings();
-  setMessage('Custom IDE added.', 'success');
 }
 
 async function addCustomHost(event) {
@@ -275,17 +362,17 @@ async function addCustomHost(event) {
   const host = parseHost(input.value);
 
   if (!host) {
-    setMessage('Enter a valid host name.', 'error');
+    showInputError(input, 'Enter a valid host name.');
     return;
   }
 
   if (!host.endsWith('.ghe.com')) {
-    setMessage('Only *.ghe.com enterprise hosts are supported.', 'error');
+    showInputError(input, 'Only *.ghe.com enterprise hosts are supported.');
     return;
   }
 
   if (settings.enabledHosts.includes(host)) {
-    setMessage('That host is already configured.', 'error');
+    showInputError(input, 'That host is already configured.');
     return;
   }
 
@@ -293,7 +380,6 @@ async function addCustomHost(event) {
   await saveSettings();
   input.value = '';
   renderHostSettings();
-  setMessage('Host added.', 'success');
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -344,10 +430,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderHostSettings();
   document
     .getElementById('custom-ide-form')
-    .addEventListener('submit', addCustomIde);
+    .addEventListener('submit', saveCustomIde);
+  document
+    .getElementById('custom-ide-cancel')
+    .addEventListener('click', resetCustomIdeForm);
+  document
+    .getElementById('custom-ide-icon')
+    .addEventListener('change', handleIconUpload);
   document
     .getElementById('custom-host-form')
     .addEventListener('submit', addCustomHost);
+  document
+    .querySelectorAll('.settings-form input')
+    .forEach((input) =>
+      input.addEventListener('input', () => clearInputError(input))
+    );
 
   displayVersion();
   displayDescription();

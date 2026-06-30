@@ -270,12 +270,14 @@ async function addIdeButtons(container, repoUrl) {
   );
   wrapper.appendChild(mainBtn);
 
-  // overflow button (chevron)
-  const overflowBtn = createActionButton('▾', () =>
-    openIdeModal(getCurrentRepoUrl(), enabledIdeList)
-  );
-  overflowBtn.classList.add('open-with-jetbrains-ide-overflow');
-  wrapper.appendChild(overflowBtn);
+  if (enabledIdeList.length > 1) {
+    // overflow button (chevron)
+    const overflowBtn = createActionButton('▾', () =>
+      openIdeModal(getCurrentRepoUrl(), enabledIdeList)
+    );
+    overflowBtn.classList.add('open-with-jetbrains-ide-overflow');
+    wrapper.appendChild(overflowBtn);
+  }
 
   li.appendChild(wrapper);
 
