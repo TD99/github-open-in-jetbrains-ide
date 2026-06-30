@@ -66,6 +66,7 @@ const SETTINGS_DEFAULTS = {
   enabledIdeIds: SUPPORTED_IDE_LIST.map((ide) => ide.id),
   customIdes: [],
   enabledHosts: ['github.com'],
+  advancedOpenWith: true,
 };
 
 function getFromStorage(defaults) {
@@ -99,6 +100,10 @@ async function getSettings() {
       enabledHosts: Array.isArray(raw.enabledHosts)
         ? raw.enabledHosts
         : SETTINGS_DEFAULTS.enabledHosts,
+      advancedOpenWith:
+        typeof raw.advancedOpenWith === 'boolean'
+          ? raw.advancedOpenWith
+          : SETTINGS_DEFAULTS.advancedOpenWith,
     };
   } catch (e) {
     console.warn('Settings not available, using defaults.', e);
@@ -273,7 +278,12 @@ async function addIdeButtons(container, repoUrl) {
   if (enabledIdeList.length > 1) {
     // overflow button (chevron)
     const overflowBtn = createActionButton('▾', () =>
-      openIdeModal(getCurrentRepoUrl(), enabledIdeList)
+      openIdeModal(
+        getCurrentRepoUrl(),
+        enabledIdeList,
+        defaultIde,
+        settings.advancedOpenWith
+      )
     );
     overflowBtn.classList.add('open-with-jetbrains-ide-overflow');
     wrapper.appendChild(overflowBtn);
@@ -309,7 +319,7 @@ function closeIdeModal() {
   document.removeEventListener('keydown', handleEscape);
 }
 
-function openIdeModal(repoUrl, ideList) {
+function openIdeModal(repoUrl, ideList, defaultIde, advancedOpenWith) {
   if (document.querySelector('.open-with-jetbrains-ide-modal')) return;
 
   closeOldModal();
@@ -325,20 +335,80 @@ function openIdeModal(repoUrl, ideList) {
   modal.className = 'open-with-jetbrains-ide-modal';
 
   const title = document.createElement('h3');
-  title.textContent = 'Select the IDE to open with';
+  title.textContent = 'Open with';
   modal.appendChild(title);
+
+  let selectedIde = ideList.find((ide) => ide.id === defaultIde) || ideList[0];
+
+  const selectIde = (ide) => {
+    selectedIde = ide;
+    updateSelection();
+  };
+
+  const updateSelection = () => {
+    modal
+      .querySelectorAll('.open-with-jetbrains-ide-choice')
+      .forEach((button) => {
+        const selected = button.dataset.ideId === selectedIde.id;
+        button.classList.toggle('selected', selected);
+        button.setAttribute('aria-selected', String(selected));
+      });
+  };
 
   ideList.forEach((ide, index) => {
     const btn = createActionButton(
-      `Open with ${ide.name}`,
+      advancedOpenWith ? ide.name : `Open with ${ide.name}`,
       () => {
-        setDefaultIDE(ide.id);
-        closeIdeModal();
-        window.location.href = buildUri(ide, repoUrl);
+        if (advancedOpenWith) {
+          selectIde(ide);
+          return;
+        }
+
+        openSelectedIde(ide, repoUrl, true);
       },
-      '',
+      'open-with-jetbrains-ide-choice',
       ide.icon
     );
+    btn.dataset.ideId = ide.id;
+    btn.setAttribute('role', 'option');
+    btn.addEventListener('dblclick', () => {
+      if (advancedOpenWith) {
+        openSelectedIde(ide, repoUrl, false);
+      }
+    });
+
+    btn.addEventListener('keydown', (event) => {
+      if (!advancedOpenWith) return;
+
+      const currentIndex = ideList.findIndex(
+        (item) => item.id === selectedIde.id
+      );
+
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openSelectedIde(selectedIde, repoUrl, false);
+        return;
+      }
+
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        const nextIde = ideList[(currentIndex + 1) % ideList.length];
+        selectIde(nextIde);
+        modal
+          .querySelector(`[data-ide-id="${CSS.escape(nextIde.id)}"]`)
+          ?.focus();
+      }
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        const previousIde =
+          ideList[(currentIndex - 1 + ideList.length) % ideList.length];
+        selectIde(previousIde);
+        modal
+          .querySelector(`[data-ide-id="${CSS.escape(previousIde.id)}"]`)
+          ?.focus();
+      }
+    });
 
     if (index === 0) {
       requestAnimationFrame(() => btn.focus());
@@ -347,11 +417,31 @@ function openIdeModal(repoUrl, ideList) {
     modal.appendChild(btn);
   });
 
-  const note = document.createElement('p');
-  note.className = 'open-with-jetbrains-ide-note';
-  note.textContent =
-    'If this repository was already cloned in a JetBrains IDE, that IDE will be chosen automatically.';
-  modal.appendChild(note);
+  if (advancedOpenWith) {
+    updateSelection();
+
+    const actions = document.createElement('div');
+    actions.className = 'open-with-jetbrains-ide-modal-actions';
+
+    const openOnce = document.createElement('button');
+    openOnce.type = 'button';
+    openOnce.className = 'btn';
+    openOnce.textContent = 'Open once';
+    openOnce.addEventListener('click', () =>
+      openSelectedIde(selectedIde, repoUrl, false)
+    );
+
+    const openAlways = document.createElement('button');
+    openAlways.type = 'button';
+    openAlways.className = 'btn btn-primary';
+    openAlways.textContent = 'Open always';
+    openAlways.addEventListener('click', () =>
+      openSelectedIde(selectedIde, repoUrl, true)
+    );
+
+    actions.append(openOnce, openAlways);
+    modal.appendChild(actions);
+  }
 
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
@@ -361,6 +451,15 @@ function openIdeModal(repoUrl, ideList) {
   });
 
   document.addEventListener('keydown', handleEscape);
+}
+
+function openSelectedIde(ide, repoUrl, updateDefault) {
+  if (updateDefault) {
+    setDefaultIDE(ide.id);
+  }
+
+  closeIdeModal();
+  window.location.href = buildUri(ide, repoUrl);
 }
 
 function handleNode(node) {

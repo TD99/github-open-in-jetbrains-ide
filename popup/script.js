@@ -16,6 +16,7 @@ const SETTINGS_DEFAULTS = {
   enabledIdeIds: BUILT_IN_IDES.map((ide) => ide.id),
   customIdes: [],
   enabledHosts: ['github.com'],
+  advancedOpenWith: true,
 };
 
 let settings = { ...SETTINGS_DEFAULTS };
@@ -48,6 +49,10 @@ function normalizeSettings(raw) {
     enabledIdeIds: enabledIdeIds.length ? enabledIdeIds : [BUILT_IN_IDES[0].id],
     customIdes,
     enabledHosts: enabledHosts.length ? enabledHosts : ['github.com'],
+    advancedOpenWith:
+      typeof raw.advancedOpenWith === 'boolean'
+        ? raw.advancedOpenWith
+        : SETTINGS_DEFAULTS.advancedOpenWith,
   };
 }
 
@@ -173,6 +178,24 @@ function renderIdeSettings() {
       createRow(ide.name, ide.type === 'custom' ? ide.uriTemplate : '', actions)
     );
   });
+}
+
+function renderAdvancedOpenWithSetting() {
+  const container = document.getElementById('advanced-open-with');
+  container.textContent = '';
+  container.appendChild(
+    createRow(
+      'Advanced Open With',
+      'Select first, then choose once or always',
+      [
+        createSwitch(settings.advancedOpenWith, async (input) => {
+          settings.advancedOpenWith = input.checked;
+          await saveSettings();
+          renderAdvancedOpenWithSetting();
+        }),
+      ]
+    )
+  );
 }
 
 function resetCustomIdeForm() {
@@ -427,6 +450,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   settings = normalizeSettings(await getStorage(SETTINGS_DEFAULTS));
   renderIdeSettings();
+  renderAdvancedOpenWithSetting();
   renderHostSettings();
   document
     .getElementById('custom-ide-form')
