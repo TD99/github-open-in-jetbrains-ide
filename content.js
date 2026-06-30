@@ -66,7 +66,6 @@ const SETTINGS_DEFAULTS = {
   enabledIdeIds: SUPPORTED_IDE_LIST.map((ide) => ide.id),
   customIdes: [],
   enabledHosts: ['github.com'],
-  advancedOpenWith: true,
 };
 
 function getFromStorage(defaults) {
@@ -100,10 +99,6 @@ async function getSettings() {
       enabledHosts: Array.isArray(raw.enabledHosts)
         ? raw.enabledHosts
         : SETTINGS_DEFAULTS.enabledHosts,
-      advancedOpenWith:
-        typeof raw.advancedOpenWith === 'boolean'
-          ? raw.advancedOpenWith
-          : SETTINGS_DEFAULTS.advancedOpenWith,
     };
   } catch (e) {
     console.warn('Settings not available, using defaults.', e);
@@ -278,12 +273,7 @@ async function addIdeButtons(container, repoUrl) {
   if (enabledIdeList.length > 1) {
     // overflow button (chevron)
     const overflowBtn = createActionButton('▾', () =>
-      openIdeModal(
-        getCurrentRepoUrl(),
-        enabledIdeList,
-        defaultIde,
-        settings.advancedOpenWith
-      )
+      openIdeModal(getCurrentRepoUrl(), enabledIdeList, defaultIde)
     );
     overflowBtn.classList.add('open-with-jetbrains-ide-overflow');
     wrapper.appendChild(overflowBtn);
@@ -319,7 +309,7 @@ function closeIdeModal() {
   document.removeEventListener('keydown', handleEscape);
 }
 
-function openIdeModal(repoUrl, ideList, defaultIde, advancedOpenWith) {
+function openIdeModal(repoUrl, ideList, defaultIde) {
   if (document.querySelector('.open-with-jetbrains-ide-modal')) return;
 
   closeOldModal();
@@ -357,14 +347,9 @@ function openIdeModal(repoUrl, ideList, defaultIde, advancedOpenWith) {
 
   ideList.forEach((ide, index) => {
     const btn = createActionButton(
-      advancedOpenWith ? ide.name : `Open with ${ide.name}`,
+      ide.name,
       () => {
-        if (advancedOpenWith) {
-          selectIde(ide);
-          return;
-        }
-
-        openSelectedIde(ide, repoUrl, true);
+        selectIde(ide);
       },
       'open-with-jetbrains-ide-choice',
       ide.icon
@@ -372,13 +357,14 @@ function openIdeModal(repoUrl, ideList, defaultIde, advancedOpenWith) {
     btn.dataset.ideId = ide.id;
     btn.setAttribute('role', 'option');
     btn.addEventListener('dblclick', () => {
-      if (advancedOpenWith) {
-        openSelectedIde(ide, repoUrl, false);
-      }
+      openSelectedIde(ide, repoUrl, false);
     });
 
     btn.addEventListener('keydown', (event) => {
-      if (!advancedOpenWith) return;
+      if (event.key === 'Tab') {
+        trapModalFocus(event, modal);
+        return;
+      }
 
       const currentIndex = ideList.findIndex(
         (item) => item.id === selectedIde.id
@@ -417,31 +403,33 @@ function openIdeModal(repoUrl, ideList, defaultIde, advancedOpenWith) {
     modal.appendChild(btn);
   });
 
-  if (advancedOpenWith) {
-    updateSelection();
+  updateSelection();
 
-    const actions = document.createElement('div');
-    actions.className = 'open-with-jetbrains-ide-modal-actions';
+  const actions = document.createElement('div');
+  actions.className = 'open-with-jetbrains-ide-modal-actions';
 
-    const openOnce = document.createElement('button');
-    openOnce.type = 'button';
-    openOnce.className = 'btn';
-    openOnce.textContent = 'Open once';
-    openOnce.addEventListener('click', () =>
-      openSelectedIde(selectedIde, repoUrl, false)
-    );
+  const openOnce = document.createElement('button');
+  openOnce.type = 'button';
+  openOnce.className = 'btn';
+  openOnce.textContent = 'Open once';
+  openOnce.addEventListener('click', () =>
+    openSelectedIde(selectedIde, repoUrl, false)
+  );
+  openOnce.addEventListener('keydown', (event) => trapModalFocus(event, modal));
 
-    const openAlways = document.createElement('button');
-    openAlways.type = 'button';
-    openAlways.className = 'btn btn-primary';
-    openAlways.textContent = 'Open always';
-    openAlways.addEventListener('click', () =>
-      openSelectedIde(selectedIde, repoUrl, true)
-    );
+  const openAlways = document.createElement('button');
+  openAlways.type = 'button';
+  openAlways.className = 'btn btn-primary';
+  openAlways.textContent = 'Open always';
+  openAlways.addEventListener('click', () =>
+    openSelectedIde(selectedIde, repoUrl, true)
+  );
+  openAlways.addEventListener('keydown', (event) =>
+    trapModalFocus(event, modal)
+  );
 
-    actions.append(openOnce, openAlways);
-    modal.appendChild(actions);
-  }
+  actions.append(openOnce, openAlways);
+  modal.appendChild(actions);
 
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
@@ -451,6 +439,28 @@ function openIdeModal(repoUrl, ideList, defaultIde, advancedOpenWith) {
   });
 
   document.addEventListener('keydown', handleEscape);
+}
+
+function trapModalFocus(event, modal) {
+  if (event.key !== 'Tab') return;
+
+  const focusableElements = Array.from(
+    modal.querySelectorAll(
+      'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+  ).filter((element) => element.offsetParent !== null);
+  if (!focusableElements.length) return;
+
+  const first = focusableElements[0];
+  const last = focusableElements[focusableElements.length - 1];
+
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
 }
 
 function openSelectedIde(ide, repoUrl, updateDefault) {
