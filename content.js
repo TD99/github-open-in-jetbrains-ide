@@ -370,9 +370,15 @@ function openIdeModal(repoUrl, ideList, defaultIde) {
         (item) => item.id === selectedIde.id
       );
 
-      if (event.key === 'Enter' || event.key === ' ') {
+      if (event.key === 'Enter') {
         event.preventDefault();
-        openSelectedIde(selectedIde, repoUrl, false);
+        openSelectedIde(ide, repoUrl, false);
+        return;
+      }
+
+      if (event.key === ' ') {
+        event.preventDefault();
+        selectIde(ide);
         return;
       }
 
